@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>ameba.module</groupId>
+    <groupId>org.amebastack.module</groupId>
     <artifactId>ameba-cache</artifactId>
     <version>0.1.0</version>
     <modules>
@@ -45,12 +45,12 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>ameba</groupId>
+            <groupId>org.amebastack</groupId>
             <artifactId>ameba-utils</artifactId>
             <version>${ameba.utils.version}</version>
         </dependency>
         <dependency>
-            <groupId>ameba</groupId>
+            <groupId>org.amebastack</groupId>
             <artifactId>ameba</artifactId>
             <version>${ameba.version}</version>
             <scope>provided</scope>

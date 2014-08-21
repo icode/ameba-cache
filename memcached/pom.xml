@@ -11,6 +11,43 @@
 
     <artifactId>ameba-cache-memcached</artifactId>
 
+    <name>Ameba-Framework-Cache</name>
+    <description>A useful Java framework memcached cache!</description>
+
+    <url>http://amebastack.org</url>
+    <inceptionYear>2014</inceptionYear>
+
+    <licenses>
+        <license>
+            <name>MIT</name>
+            <url>https://raw.githubusercontent.com/intelligentcode/ameba-cache/master/LICENSE</url>
+            <distribution>repo</distribution>
+            <comments>The MIT License (MIT)</comments>
+        </license>
+    </licenses>
+
+    <scm>
+        <url>https://github.com/intelligentcode/ameba-cache</url>
+        <connection>scm:git:https://github.com/intelligentcode/ameba-cache.git</connection>
+        <developerConnection>scm:git:git@github.com:intelligentcode/ameba-cache.git</developerConnection>
+    </scm>
+
+    <issueManagement>
+        <system>github</system>
+        <url>https://github.com/intelligentcode/ameba-cache/issues</url>
+    </issueManagement>
+
+    <developers>
+        <developer>
+            <name>Zhang Lixin</name>
+            <email>intelligentcodemail A gmail D com</email>
+            <roles>
+                <role>Developer</role>
+            </roles>
+            <timezone>+8</timezone>
+        </developer>
+    </developers>
+
     <dependencies>
         <dependency>
             <groupId>org.amebastack.module</groupId>
@@ -37,9 +74,15 @@
             </exclusions>
             <optional>true</optional>
         </dependency>
+        <dependency>
+            <artifactId>grizzly-framework</artifactId>
+            <groupId>org.glassfish.grizzly</groupId>
+            <version>${grizzly.version}</version>
+        </dependency>
     </dependencies>
 
     <properties>
+        <grizzly.version>2.3.16</grizzly.version>
         <grizzly.ext.memcached.version>1.3.10</grizzly.ext.memcached.version>
     </properties>
 </project>

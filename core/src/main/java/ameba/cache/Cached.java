@@ -13,5 +13,6 @@ import java.lang.annotation.Target;
 @Target({ElementType.METHOD})
 @NameBinding
 public @interface Cached {
-
+    String value();
+    boolean safe() default false;
 }

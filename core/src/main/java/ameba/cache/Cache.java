@@ -1,6 +1,8 @@
 package ameba.cache;
 
+import ameba.util.ClassUtils;
 import ameba.util.Times;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.ws.rs.core.FeatureContext;
 import java.io.NotSerializableException;
@@ -303,9 +305,15 @@ public abstract class Cache {
     public static class Feature implements javax.ws.rs.core.Feature {
 
         @Override
+        @SuppressWarnings("unchecked")
         public boolean configure(FeatureContext context) {
-
-            return true;
+            String engine = (String) context.getConfiguration().getProperty("cache.engine");
+            if (StringUtils.isNoneBlank(engine)) {
+                cacheEngine = (CacheEngine<String, Object>) ClassUtils.newInstance(engine);
+                cacheEngine.configure(context);
+                return true;
+            } else
+                return false;
         }
     }
 }

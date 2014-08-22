@@ -62,7 +62,7 @@ public class MemcachedEngine<K, V> extends CacheEngine<K, V> {
     }
 
     @Override
-    public Map<K, V> get(K[] keys) {
+    public Map<K, V> get(K... keys) {
         return cache.getMulti(Sets.newHashSet(keys));
     }
 
@@ -73,19 +73,29 @@ public class MemcachedEngine<K, V> extends CacheEngine<K, V> {
     }
 
     @Override
-    public long incr(K key, int by, final long initial, final int expirationInSecs) {
+    public void incr(K key, int by, final long initial, final int expirationInSecs) {
+        cache.incr(key, by, initial, expirationInSecs, true);
+    }
+
+    @Override
+    public void decr(K key, int by, final long initial, final int expirationInSecs) {
+        cache.decr(key, by, initial, expirationInSecs, true);
+    }
+
+    @Override
+    public long safeIncr(K key, int by, long initial, int expirationInSecs) {
         return cache.incr(key, by, initial, expirationInSecs, false);
     }
 
     @Override
-    public long decr(K key, int by, final long initial, final int expirationInSecs) {
+    public long safeDecr(K key, int by, long initial, int expirationInSecs) {
         return cache.decr(key, by, initial, expirationInSecs, false);
     }
 
     @Override
     public void clear() {
         for (SocketAddress address : cache.getCurrentServerList()) {
-            cache.flushAll(address, -1, true);
+            cache.flushAll(address, 0, true);
         }
     }
 

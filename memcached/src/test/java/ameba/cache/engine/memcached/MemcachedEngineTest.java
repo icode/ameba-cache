@@ -3,6 +3,7 @@ package ameba.cache.engine.memcached;
 import ameba.cache.CacheEngine;
 import com.google.common.collect.Sets;
 import org.apache.commons.lang3.StringUtils;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -10,6 +11,7 @@ import org.junit.Test;
 import java.io.Serializable;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+import java.util.Map;
 
 /**
  * @author icode
@@ -23,71 +25,230 @@ public class MemcachedEngineTest {
         engine = MemcachedEngine.create(Sets.<SocketAddress>newHashSet(new InetSocketAddress("127.0.0.1", 11211)));
     }
 
+    @After
+    public void tearDown() throws Exception {
+        engine.stop();
+    }
+
+    @Test
+    public void testReplace() throws InterruptedException {
+        Data d = new Data("a", "b", "c");
+        engine.safeSet("testReplace", d, 3);
+        Assert.assertEquals(d, engine.get("testReplace"));
+        Data d1 = new Data("a1", "b1", "c1");
+
+        engine.replace("testReplace", d1, 1);
+        Thread.sleep(100);
+        Assert.assertEquals(d1, engine.get("testReplace"));
+    }
+
+    @Test
+    public void testGet() {
+        Data d = new Data("a", "b", "c");
+        engine.safeSet("testGet", d, 3);
+        Assert.assertEquals(d, engine.get("testGet"));
+
+        Data d1 = new Data("a1", "b1", "c1");
+        engine.safeSet("testGet2", d1, 3);
+        Assert.assertEquals(d1, engine.get("testGet2"));
+
+        Map<String, Object> objs = engine.get("testGet", "testGet2");
+
+        Assert.assertEquals(d, objs.get("testGet"));
+        Assert.assertEquals(d1, objs.get("testGet2"));
+    }
+
+    @Test
+    public void testDecr() throws InterruptedException {
+        engine.safeDelete("testDecr");
+        engine.decr("testDecr", 1, 5, 3);
+        Thread.sleep(100);
+        Assert.assertEquals(5L, engine.safeDecr("testDecr", 0, 0, 3));
+
+        engine.decr("testDecr", 5, 1, 1);
+        Thread.sleep(100);
+        Assert.assertEquals(0L, engine.safeDecr("testDecr", 0, 0, 1));
+    }
+
+    @Test
+    public void testSafeDecr() {
+        engine.safeDelete("testSafeDecr");
+        long it = engine.safeDecr("testSafeDecr", 1, 5, 3);
+
+        Assert.assertEquals(5, it);
+
+        it = engine.safeDecr("testSafeDecr", 5, 0, 1);
+        Assert.assertEquals(0, it);
+    }
+
+    @Test
+    public void testClear() {
+
+        Data d = new Data("a", "b", "c");
+        engine.safeSet("testClear", d, 3);
+        Assert.assertEquals(d, engine.get("testClear"));
+
+        engine.safeSet("testClear", d, 3);
+        Assert.assertEquals(d, engine.get("testClear"));
+
+        engine.clear();
+
+        Assert.assertNotEquals(d, engine.get("testClear"));
+        Assert.assertNotEquals(d, engine.get("testClear"));
+    }
+
+    @Test
+    public void testDelete() throws InterruptedException {
+
+        Data d = new Data("a", "b", "c");
+        engine.safeSet("testDelete", d, 3);
+        Assert.assertEquals(d, engine.get("testDelete"));
+
+        engine.delete("testDelete");
+
+        Thread.sleep(3 * 1000);
+
+        Assert.assertNotEquals(d, engine.get("testDelete"));
+    }
+
+    @Test
+    public void testSafeIncr() {
+
+        Assert.assertEquals(1L, engine.safeIncr("testSafeIncr", 1, 1, 3));
+
+        Assert.assertEquals(6L, engine.safeIncr("testSafeIncr", 5, 1, 1));
+    }
+
+    @Test
+    public void testIncr() throws InterruptedException {
+        engine.safeDelete("testIncr");
+        engine.incr("testIncr", 1, 1, 3);
+        Thread.sleep(100);
+
+        Assert.assertEquals(1, engine.safeIncr("testIncr", 0, 0, 3));
+
+        engine.incr("testIncr", 5, 1, 1);
+        Thread.sleep(100);
+        Assert.assertEquals(6, engine.safeIncr("testIncr", 0, 0, 1));
+    }
+
+
+    @Test
+    public void testSafeReplace() {
+        Data d = new Data("a", "b", "c");
+        engine.safeSet("testSafeReplace", d, 3);
+        Assert.assertEquals(d, engine.get("testSafeReplace"));
+        Data d1 = new Data("a1", "b1", "c1");
+
+        engine.safeReplace("testSafeReplace", d1, 1);
+        Assert.assertEquals(d1, engine.get("testSafeReplace"));
+    }
+
+    @Test
+    public void testSafeDelete() {
+        Data d = new Data("a", "b", "c");
+        engine.safeSet("testSafeDelete", d, 3);
+        Assert.assertEquals(d, engine.get("testSafeDelete"));
+
+        engine.safeDelete("testSafeDelete");
+
+        Assert.assertNotEquals(d, engine.get("testSafeDelete"));
+    }
+
+    @Test
+    public void testGat() throws InterruptedException {
+        Data d = new Data("a", "b", "c");
+        engine.safeSet("testGat", d, 3);
+
+        Assert.assertEquals(d, engine.gat("testGat", 1));
+        Thread.sleep(1000);
+
+        Assert.assertNotEquals(d, engine.get("testGat"));
+    }
+
     @Test
     public void testSafeSet() throws InterruptedException {
         Data d = new Data("a", "b", "c");
-        engine.safeSet("test1", d, 3);
+        engine.safeSet("testSafeSet", d, 3);
 
-        Assert.assertEquals(d, engine.get("test1"));
+        Assert.assertEquals(d, engine.get("testSafeSet"));
 
         Data d1 = new Data("a1", "b1", "c1");
-        engine.set("test1", d1, 3);
-        Assert.assertEquals(d1, engine.get("test1"));
+        engine.set("testSafeSet", d1, 3);
+        Assert.assertEquals(d1, engine.get("testSafeSet"));
 
         Thread.sleep(3 * 1000);
-        Assert.assertNotEquals(d, engine.get("test1"));
+        Assert.assertNotEquals(d, engine.get("testSafeSet"));
     }
 
     @Test
     public void testSet() throws InterruptedException {
         Data d = new Data("a", "b", "c");
-        engine.set("test1", d, 3);
+        engine.set("testSet", d, 3);
 
         Thread.sleep(100);
 
-        Assert.assertEquals(d, engine.get("test1"));
+        Assert.assertEquals(d, engine.get("testSet"));
 
 
         Data d1 = new Data("a1", "b1", "c1");
-        engine.set("test1", d1, 3);
+        engine.set("testSet", d1, 3);
         Thread.sleep(100);
-        Assert.assertEquals(d1, engine.get("test1"));
+        Assert.assertEquals(d1, engine.get("testSet"));
 
         Thread.sleep(3 * 1000);
-        Assert.assertNotEquals(d, engine.get("test1"));
+        Assert.assertNotEquals(d, engine.get("testSet"));
     }
 
     @Test
-    public void testAdd() throws InterruptedException {
+    public void testTouch() throws InterruptedException {
         Data d = new Data("a", "b", "c");
-        engine.add("test1", d, 3);
+        engine.safeAdd("testTouch", d, 3);
 
-        Thread.sleep(100);
+        Assert.assertEquals(d, engine.get("testTouch"));
 
-        Assert.assertEquals(d, engine.get("test1"));
-
-        Data d1 = new Data("a1", "b1", "c1");
-        engine.add("test1", d1, 3);
-        Thread.sleep(100);
-        Assert.assertNotEquals(d1, engine.get("test1"));
+        Thread.sleep(2 * 1000);
+        engine.touch("testTouch", 3);
+        Assert.assertEquals(d, engine.get("testTouch"));
 
         Thread.sleep(3 * 1000);
-        Assert.assertNotEquals(d, engine.get("test1"));
+        Assert.assertNotEquals(d, engine.get("testTouch"));
+    }
+
+
+    @Test
+    public void testAdd() throws InterruptedException {
+        engine.clear();
+
+        Data d = new Data("a", "b", "c");
+        engine.add("testAdd", d, 3);
+
+        Thread.sleep(100);
+
+        Assert.assertEquals(d, engine.get("testAdd"));
+
+        Data d1 = new Data("a1", "b1", "c1");
+        engine.add("testAdd", d1, 3);
+        Thread.sleep(100);
+        Assert.assertNotEquals(d1, engine.get("testAdd"));
+
+        Thread.sleep(3 * 1000);
+        Assert.assertNotEquals(d, engine.get("testAdd"));
     }
 
     @Test
     public void testSafeAdd() throws InterruptedException {
         Data d = new Data("a", "b", "c");
-        engine.safeAdd("test1", d, 3);
+        engine.safeAdd("testSafeAdd", d, 3);
 
-        Assert.assertEquals(d, engine.get("test1"));
+        Assert.assertEquals(d, engine.get("testSafeAdd"));
 
         Data d1 = new Data("a1", "b1", "c1");
-        engine.safeAdd("test1", d1, 3);
-        Assert.assertNotEquals(d1, engine.get("test1"));
+        engine.safeAdd("testSafeAdd", d1, 3);
+        Assert.assertNotEquals(d1, engine.get("testSafeAdd"));
 
         Thread.sleep(3 * 1000);
-        Assert.assertNotEquals(d, engine.get("test1"));
+        Assert.assertNotEquals(d, engine.get("testSafeAdd"));
     }
 
     public static class Data implements Serializable {

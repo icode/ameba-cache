@@ -27,11 +27,15 @@ public abstract class CacheEngine<K, V> {
 
     public abstract boolean touch(K key, int expiration);
 
-    public abstract Map<K, V> get(K[] keys);
+    public abstract Map<K, V> get(K... keys);
 
-    public abstract long incr(K key, int by, final long initial, final int expirationInSecs);
+    public abstract void incr(K key, int by, final long initial, final int expirationInSecs);
 
-    public abstract long decr(K key, int by, final long initial, final int expirationInSecs);
+    public abstract void decr(K key, int by, final long initial, final int expirationInSecs);
+
+    public abstract long safeIncr(K key, int by, final long initial, final int expirationInSecs);
+
+    public abstract long safeDecr(K key, int by, final long initial, final int expirationInSecs);
 
     public abstract void clear();
 

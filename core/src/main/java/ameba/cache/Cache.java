@@ -132,6 +132,15 @@ public abstract class Cache {
     }
 
     /**
+     * Increment the element value (must be a Number) by 1.
+     *
+     * @param key Element key
+     * @return The new value
+     */
+    public static void incr(String key) {
+        incr(key, 0);
+    }
+    /**
      * Increment the element value (must be a Number).
      *
      * @param key              Element key
@@ -140,8 +149,8 @@ public abstract class Cache {
      * @param expirationInSecs The expiration
      * @return The new value
      */
-    public static long incr(String key, int by, final long initial, final int expirationInSecs) {
-        return cacheEngine.incr(key, by, initial, expirationInSecs);
+    public static void incr(String key, int by, final long initial, final int expirationInSecs) {
+        cacheEngine.incr(key, by, initial, expirationInSecs);
     }
 
     /**
@@ -151,9 +160,43 @@ public abstract class Cache {
      * @param expirationInSecs The expiration
      * @return The new value
      */
-    public static long incr(String key, final int expirationInSecs) {
-        return cacheEngine.incr(key, 1, 0, expirationInSecs);
+    public static void incr(String key, final int expirationInSecs) {
+        incr(key, 1, 1, expirationInSecs);
     }
+
+    /**
+     * Increment the element value (must be a Number) by 1.
+     *
+     * @param key Element key
+     * @return The new value
+     */
+    public static void safeIncr(String key) {
+        safeIncr(key, 0);
+    }
+    /**
+     * Increment the element value (must be a Number).
+     *
+     * @param key              Element key
+     * @param by               The incr value
+     * @param initial          The initial value
+     * @param expirationInSecs The expiration
+     * @return The new value
+     */
+    public static void safeIncr(String key, int by, final long initial, final int expirationInSecs) {
+        cacheEngine.safeIncr(key, by, initial, expirationInSecs);
+    }
+
+    /**
+     * Increment the element value (must be a Number) by 1.
+     *
+     * @param key              Element key
+     * @param expirationInSecs The expiration
+     * @return The new value
+     */
+    public static void safeIncr(String key, final int expirationInSecs) {
+        safeIncr(key, 1, 1, expirationInSecs);
+    }
+
 
     public static void add(String key, Object value, int expiration) {
         checkSerializable(value);
@@ -194,13 +237,37 @@ public abstract class Cache {
     }
 
     /**
-     * Increment the element value (must be a Number) by 1.
+     * Decrement the element value (must be a Number).
+     *
+     * @param key              Element key
+     * @param by               The decr value
+     * @param initial          The initial value
+     * @param expirationInSecs The expiration
+     * @return The new value
+     */
+    public static void decr(String key, int by, final long initial, final int expirationInSecs) {
+        cacheEngine.decr(key, by, initial, expirationInSecs);
+    }
+
+    /**
+     * Decrement the element value (must be a Number) by 1.
+     *
+     * @param key              Element key
+     * @param expirationInSecs The expiration
+     * @return The new value
+     */
+    public static void decr(String key, final int expirationInSecs) {
+        decr(key, 1, 0, expirationInSecs);
+    }
+
+    /**
+     * Decrement the element value (must be a Number) by 1.
      *
      * @param key Element key
      * @return The new value
      */
-    public static long incr(String key) {
-        return cacheEngine.incr(key, 1, 0, 0);
+    public static void decr(String key) {
+        decr(key, 0);
     }
 
     /**
@@ -212,8 +279,8 @@ public abstract class Cache {
      * @param expirationInSecs The expiration
      * @return The new value
      */
-    public static long decr(String key, int by, final long initial, final int expirationInSecs) {
-        return cacheEngine.decr(key, by, initial, expirationInSecs);
+    public static void safeDecr(String key, int by, final long initial, final int expirationInSecs) {
+        cacheEngine.safeDecr(key, by, initial, expirationInSecs);
     }
 
     /**
@@ -223,8 +290,8 @@ public abstract class Cache {
      * @param expirationInSecs The expiration
      * @return The new value
      */
-    public static long decr(String key, final int expirationInSecs) {
-        return cacheEngine.decr(key, 1, 0, expirationInSecs);
+    public static void safeDecr(String key, final int expirationInSecs) {
+        safeDecr(key, 1, 0, expirationInSecs);
     }
 
     /**
@@ -233,8 +300,8 @@ public abstract class Cache {
      * @param key Element key
      * @return The new value
      */
-    public static long decr(String key) {
-        return cacheEngine.decr(key, 1, 0, 0);
+    public static void safeDecr(String key) {
+        safeDecr(key, 0);
     }
 
     /**

@@ -42,9 +42,9 @@ public abstract class Cache {
      * @param expiration Ex: 10s, 3mn, 8h
      * @return If the element an eventually been cached
      */
-    public static boolean safeAdd(String key, Object value, String expiration) {
+    public static boolean syncAdd(String key, Object value, String expiration) {
         checkSerializable(value);
-        return cacheEngine.safeAdd(key, value, Times.parseDuration(expiration));
+        return cacheEngine.syncAdd(key, value, Times.parseDuration(expiration));
     }
 
     /**
@@ -78,9 +78,9 @@ public abstract class Cache {
      * @param expiration Ex: 10s, 3mn, 8h, 2d 5h 30min
      * @return If the element an eventually been cached
      */
-    public static boolean safeSet(String key, Object value, String expiration) {
+    public static boolean syncSet(String key, Object value, String expiration) {
         checkSerializable(value);
-        return cacheEngine.safeSet(key, value, Times.parseDuration(expiration));
+        return cacheEngine.syncSet(key, value, Times.parseDuration(expiration));
     }
 
     /**
@@ -115,9 +115,9 @@ public abstract class Cache {
      * @param expiration Ex: 10s, 3mn, 8h, 2d 5h 30min
      * @return If the element an eventually been cached
      */
-    public static boolean safeReplace(String key, Object value, String expiration) {
+    public static boolean syncReplace(String key, Object value, String expiration) {
         checkSerializable(value);
-        return cacheEngine.safeReplace(key, value, Times.parseDuration(expiration));
+        return cacheEngine.syncReplace(key, value, Times.parseDuration(expiration));
     }
 
     /**
@@ -140,6 +140,7 @@ public abstract class Cache {
     public static void incr(String key) {
         incr(key, 0);
     }
+
     /**
      * Increment the element value (must be a Number).
      *
@@ -170,9 +171,10 @@ public abstract class Cache {
      * @param key Element key
      * @return The new value
      */
-    public static void safeIncr(String key) {
-        safeIncr(key, 0);
+    public static void syncIncr(String key) {
+        syncIncr(key, 0);
     }
+
     /**
      * Increment the element value (must be a Number).
      *
@@ -182,8 +184,8 @@ public abstract class Cache {
      * @param expirationInSecs The expiration
      * @return The new value
      */
-    public static void safeIncr(String key, int by, final long initial, final int expirationInSecs) {
-        cacheEngine.safeIncr(key, by, initial, expirationInSecs);
+    public static void syncIncr(String key, int by, final long initial, final int expirationInSecs) {
+        cacheEngine.syncIncr(key, by, initial, expirationInSecs);
     }
 
     /**
@@ -193,8 +195,8 @@ public abstract class Cache {
      * @param expirationInSecs The expiration
      * @return The new value
      */
-    public static void safeIncr(String key, final int expirationInSecs) {
-        safeIncr(key, 1, 1, expirationInSecs);
+    public static void syncIncr(String key, final int expirationInSecs) {
+        syncIncr(key, 1, 1, expirationInSecs);
     }
 
 
@@ -203,23 +205,23 @@ public abstract class Cache {
         cacheEngine.add(key, value, expiration);
     }
 
-    public static boolean safeAdd(String key, Object value, int expiration) {
+    public static boolean syncAdd(String key, Object value, int expiration) {
         checkSerializable(value);
-        return cacheEngine.safeAdd(key, value, expiration);
+        return cacheEngine.syncAdd(key, value, expiration);
     }
 
-    public static boolean safeSet(String key, Object value, int expiration) {
+    public static boolean syncSet(String key, Object value, int expiration) {
         checkSerializable(value);
-        return cacheEngine.safeSet(key, value, expiration);
+        return cacheEngine.syncSet(key, value, expiration);
     }
 
     public static Object gat(String key, int expiration) {
         return cacheEngine.gat(key, expiration);
     }
 
-    public static boolean safeReplace(String key, Object value, int expiration) {
+    public static boolean syncReplace(String key, Object value, int expiration) {
         checkSerializable(value);
-        return cacheEngine.safeReplace(key, value, expiration);
+        return cacheEngine.syncReplace(key, value, expiration);
     }
 
     public static boolean touch(String key, int expiration) {
@@ -279,8 +281,8 @@ public abstract class Cache {
      * @param expirationInSecs The expiration
      * @return The new value
      */
-    public static void safeDecr(String key, int by, final long initial, final int expirationInSecs) {
-        cacheEngine.safeDecr(key, by, initial, expirationInSecs);
+    public static void syncDecr(String key, int by, final long initial, final int expirationInSecs) {
+        cacheEngine.syncDecr(key, by, initial, expirationInSecs);
     }
 
     /**
@@ -290,8 +292,8 @@ public abstract class Cache {
      * @param expirationInSecs The expiration
      * @return The new value
      */
-    public static void safeDecr(String key, final int expirationInSecs) {
-        safeDecr(key, 1, 0, expirationInSecs);
+    public static void syncDecr(String key, final int expirationInSecs) {
+        syncDecr(key, 1, 0, expirationInSecs);
     }
 
     /**
@@ -300,8 +302,8 @@ public abstract class Cache {
      * @param key Element key
      * @return The new value
      */
-    public static void safeDecr(String key) {
-        safeDecr(key, 0);
+    public static void syncDecr(String key) {
+        syncDecr(key, 0);
     }
 
     /**
@@ -330,8 +332,8 @@ public abstract class Cache {
      * @param key The element key
      * @return If the element an eventually been deleted
      */
-    public static boolean safeDelete(String key) {
-        return cacheEngine.safeDelete(key);
+    public static boolean syncDelete(String key) {
+        return cacheEngine.syncDelete(key);
     }
 
     /**
@@ -378,6 +380,8 @@ public abstract class Cache {
             if (StringUtils.isNoneBlank(engine)) {
                 cacheEngine = (CacheEngine<String, Object>) ClassUtils.newInstance(engine);
                 cacheEngine.configure(context);
+                context.register(CacheRequestFilter.class)
+                        .register(CacheResponseFilter.class);
                 return true;
             } else
                 return false;

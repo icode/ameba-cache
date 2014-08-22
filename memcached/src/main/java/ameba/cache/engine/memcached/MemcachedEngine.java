@@ -23,7 +23,29 @@ import java.util.Set;
  */
 public class MemcachedEngine<K, V> extends CacheEngine<K, V> {
     org.glassfish.grizzly.memcached.MemcachedCache<K, V> cache;
-    public static final String DEFUALT_CACHE_NAME = "AMEBA_CACHE";
+
+    private MemcachedEngine(org.glassfish.grizzly.memcached.MemcachedCache<K, V> cache) {
+        this.cache = cache;
+    }
+
+    public MemcachedEngine() {
+    }
+
+    public static <K, V> MemcachedEngine<K, V> create(Set<SocketAddress> servers) {
+        return new MemcachedEngine<K, V>(MemcachedCache.<K, V>create(servers));
+    }
+
+    public static <K, V> MemcachedEngine<K, V> create(GrizzlyMemcachedCacheManager manager, Set<SocketAddress> servers) {
+        return new MemcachedEngine<K, V>(MemcachedCache.<K, V>create(manager, servers));
+    }
+
+    public static <K, V> MemcachedEngine<K, V> create(String cacheName, GrizzlyMemcachedCacheManager manager, Set<SocketAddress> servers) {
+        return new MemcachedEngine<K, V>(MemcachedCache.<K, V>create(cacheName, manager, servers));
+    }
+
+    public static <K, V> MemcachedEngine<K, V> create(org.glassfish.grizzly.memcached.MemcachedCache<K, V> cache) {
+        return new MemcachedEngine<K, V>(cache);
+    }
 
     @Override
     public void add(K key, V value, int expiration) {
@@ -31,7 +53,7 @@ public class MemcachedEngine<K, V> extends CacheEngine<K, V> {
     }
 
     @Override
-    public boolean safeAdd(K key, V value, int expiration) {
+    public boolean syncAdd(K key, V value, int expiration) {
         return cache.add(key, value, expiration, false);
     }
 
@@ -41,7 +63,7 @@ public class MemcachedEngine<K, V> extends CacheEngine<K, V> {
     }
 
     @Override
-    public boolean safeSet(K key, V value, int expiration) {
+    public boolean syncSet(K key, V value, int expiration) {
         return cache.set(key, value, expiration, false);
     }
 
@@ -51,13 +73,13 @@ public class MemcachedEngine<K, V> extends CacheEngine<K, V> {
     }
 
     @Override
-    public boolean safeReplace(K key, V value, int expiration) {
+    public boolean syncReplace(K key, V value, int expiration) {
         return cache.replace(key, value, expiration, false);
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    public <O> O  get(K key) {
+    public <O> O get(K key) {
         return (O) cache.get(key, false);
     }
 
@@ -68,8 +90,8 @@ public class MemcachedEngine<K, V> extends CacheEngine<K, V> {
 
     @Override
     @SuppressWarnings("unchecked")
-    public <O> O  gat(K key, int expiration) {
-        return (O) cache.gat(key, expiration, true);
+    public <O> O gat(K key, int expiration) {
+        return (O) cache.gat(key, expiration, false);
     }
 
     @Override
@@ -83,12 +105,12 @@ public class MemcachedEngine<K, V> extends CacheEngine<K, V> {
     }
 
     @Override
-    public long safeIncr(K key, int by, long initial, int expirationInSecs) {
+    public long syncIncr(K key, int by, long initial, int expirationInSecs) {
         return cache.incr(key, by, initial, expirationInSecs, false);
     }
 
     @Override
-    public long safeDecr(K key, int by, long initial, int expirationInSecs) {
+    public long syncDecr(K key, int by, long initial, int expirationInSecs) {
         return cache.decr(key, by, initial, expirationInSecs, false);
     }
 
@@ -105,7 +127,7 @@ public class MemcachedEngine<K, V> extends CacheEngine<K, V> {
     }
 
     @Override
-    public boolean safeDelete(K key) {
+    public boolean syncDelete(K key) {
         return cache.delete(key, false);
     }
 
@@ -202,6 +224,11 @@ public class MemcachedEngine<K, V> extends CacheEngine<K, V> {
             }
         }
 
+        if (servers.size() == 0) {
+            throw new CacheException("not found memecached server, please configure memcached servers at /conf/application.conf .\n" +
+                    " e.g. cache.memcached.server.server1=127.0.0.1:11211");
+        }
+
         cacheBuilder.servers(servers);
 
         String allowDisposableConnection = (String) properties.get("cache.memcached.allowDisposableConnection");
@@ -272,7 +299,7 @@ public class MemcachedEngine<K, V> extends CacheEngine<K, V> {
 
         GrizzlyMemcachedCacheManager manager = builder.build();
 
-        String cacheName = StringUtils.defaultIfBlank((String) properties.get("cache.name"), DEFUALT_CACHE_NAME);
+        String cacheName = StringUtils.defaultIfBlank((String) properties.get("cache.name"), DEFAULT_CACHE_NAME);
 
         GrizzlyMemcachedCache.Builder<K, V> cacheBuilder = manager.createCacheBuilder(cacheName);
 
@@ -536,7 +563,7 @@ public class MemcachedEngine<K, V> extends CacheEngine<K, V> {
         }
 
         public static <K, V> org.glassfish.grizzly.memcached.MemcachedCache<K, V> create(GrizzlyMemcachedCacheManager manager, Set<SocketAddress> servers) {
-            return create(DEFUALT_CACHE_NAME, manager, servers);
+            return create(DEFAULT_CACHE_NAME, manager, servers);
         }
 
         public static <K, V> org.glassfish.grizzly.memcached.MemcachedCache<K, V> create(String cacheName, GrizzlyMemcachedCacheManager manager, Set<SocketAddress> servers) {
@@ -551,29 +578,6 @@ public class MemcachedEngine<K, V> extends CacheEngine<K, V> {
         public static <K, V> org.glassfish.grizzly.memcached.MemcachedCache<K, V> create(GrizzlyMemcachedCache.Builder<K, V> builder) {
             return builder.build();
         }
-    }
-
-    public static <K, V> MemcachedEngine<K, V> create(Set<SocketAddress> servers) {
-        return new MemcachedEngine<K, V>(MemcachedCache.<K, V>create(servers));
-    }
-
-    public static <K, V> MemcachedEngine<K, V> create(GrizzlyMemcachedCacheManager manager, Set<SocketAddress> servers) {
-        return new MemcachedEngine<K, V>(MemcachedCache.<K, V>create(manager, servers));
-    }
-
-    public static <K, V> MemcachedEngine<K, V> create(String cacheName, GrizzlyMemcachedCacheManager manager, Set<SocketAddress> servers) {
-        return new MemcachedEngine<K, V>(MemcachedCache.<K, V>create(cacheName, manager, servers));
-    }
-
-    public static <K, V> MemcachedEngine<K, V> create(org.glassfish.grizzly.memcached.MemcachedCache<K, V> cache) {
-        return new MemcachedEngine<K, V>(cache);
-    }
-
-    private MemcachedEngine(org.glassfish.grizzly.memcached.MemcachedCache<K, V> cache) {
-        this.cache = cache;
-    }
-
-    public MemcachedEngine() {
     }
 
 }

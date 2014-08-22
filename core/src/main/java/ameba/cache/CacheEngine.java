@@ -9,17 +9,21 @@ import java.util.Map;
  * @author icode
  */
 public abstract class CacheEngine<K, V> {
+
+    public static final String DEFAULT_CACHE_NAME = "AMEBA_CACHE";
+
+
     public abstract void add(K key, V value, int expiration);
 
-    public abstract boolean safeAdd(K key, V value, int expiration);
+    public abstract boolean syncAdd(K key, V value, int expiration);
 
     public abstract void set(K key, V value, int expiration);
 
-    public abstract boolean safeSet(K key, V value, int expiration);
+    public abstract boolean syncSet(K key, V value, int expiration);
 
     public abstract void replace(K key, V value, int expiration);
 
-    public abstract boolean safeReplace(K key, V value, int expiration);
+    public abstract boolean syncReplace(K key, V value, int expiration);
 
     public abstract <O> O get(K key);
 
@@ -33,15 +37,15 @@ public abstract class CacheEngine<K, V> {
 
     public abstract void decr(K key, int by, final long initial, final int expirationInSecs);
 
-    public abstract long safeIncr(K key, int by, final long initial, final int expirationInSecs);
+    public abstract long syncIncr(K key, int by, final long initial, final int expirationInSecs);
 
-    public abstract long safeDecr(K key, int by, final long initial, final int expirationInSecs);
+    public abstract long syncDecr(K key, int by, final long initial, final int expirationInSecs);
 
     public abstract void clear();
 
     public abstract void delete(K key);
 
-    public abstract boolean safeDelete(K key);
+    public abstract boolean syncDelete(K key);
 
     public abstract void stop();
 

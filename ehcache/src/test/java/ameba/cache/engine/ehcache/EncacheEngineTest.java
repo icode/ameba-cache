@@ -1,7 +1,6 @@
-package ameba.cache.engine.memcached;
+package ameba.cache.engine.ehcache;
 
 import ameba.cache.CacheEngine;
-import com.google.common.collect.Sets;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.After;
 import org.junit.Assert;
@@ -9,20 +8,18 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.Serializable;
-import java.net.InetSocketAddress;
-import java.net.SocketAddress;
 import java.util.Map;
 
 /**
  * @author icode
  */
-public class MemcachedEngineTest {
+public class EncacheEngineTest {
 
     CacheEngine<String, Object> engine;
 
     @Before
     public void init() {
-        engine = MemcachedEngine.create(Sets.<SocketAddress>newHashSet(new InetSocketAddress("127.0.0.1", 11211)));
+        engine = EhcacheEngine.create();
     }
 
     @After
@@ -161,7 +158,7 @@ public class MemcachedEngineTest {
         engine.syncSet("testGat", d, 3);
 
         Assert.assertEquals(d, engine.gat("testGat", 1));
-        Thread.sleep(1000);
+        Thread.sleep(1200);
 
         Assert.assertNotEquals(d, engine.get("testGat"));
     }
@@ -211,7 +208,11 @@ public class MemcachedEngineTest {
         engine.touch("testTouch", 3);
         Assert.assertEquals(d, engine.get("testTouch"));
 
-        Thread.sleep(3 * 1000);
+        Thread.sleep(2 * 1000);
+
+        engine.get("testTouch");
+
+        Thread.sleep(1000);
         Assert.assertNotEquals(d, engine.get("testTouch"));
     }
 
@@ -247,7 +248,7 @@ public class MemcachedEngineTest {
         engine.syncAdd("testSafeAdd", d1, 3);
         Assert.assertNotEquals(d1, engine.get("testSafeAdd"));
 
-        Thread.sleep(3 * 1000);
+        Thread.sleep(3 * 1100);
         Assert.assertNotEquals(d, engine.get("testSafeAdd"));
     }
 

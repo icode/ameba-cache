@@ -77,6 +77,11 @@ cache.memcached.zk.enabled=Boolean
 cache.memcached.zk.name=String
 # e.g. 127.0.0.1:3000,127.0.0.1:3001,127.0.0.1:3002
 cache.memcached.zk.servers=String
+```
+
+##### ZooKeeper 可选配置
+
+```
 cache.memcached.zk.rootPath=String
 cache.memcached.zk.connectTimeoutInMillis=Integer
 cache.memcached.zk.sessionTimeoutInMillis=Integer

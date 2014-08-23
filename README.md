@@ -1,4 +1,4 @@
-ameba-cahe
+ameba-cache
 ==========
 
 > ameba缓存模块

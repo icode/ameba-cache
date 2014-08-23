@@ -56,7 +56,7 @@ public class AllSubResCacheTestResource {
 
     @GET
     @Path("6")
-    @Cached(key = "sub6")
+    @Cached(key = "sub")
     public String sub6() {
         logger.debug("GET all/6");
         return "666666666666666666666666";

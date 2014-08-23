@@ -56,7 +56,7 @@ public class CacheTestResource {
 
     @GET
     @Path("6")
-    @Cached(key = "sub6")
+    @Cached(key = "sub")
     public String sub6() {
         logger.debug("GET sub/6");
         return "666666666666666666666666";
@@ -68,5 +68,13 @@ public class CacheTestResource {
     public String sub7() {
         logger.debug("GET sub/7");
         return "777777777";
+    }
+
+    @GET
+    @Path("8")
+    @Cached(keyWithQuery = false)
+    public String sub8() {
+        logger.debug("GET sub/8");
+        return "8888888888";
     }
 }

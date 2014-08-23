@@ -34,8 +34,10 @@ public class CacheRequestFilter extends CacheFilter implements ContainerRequestF
             String query = uriInfo.getRequestUri().getQuery();
             String cacheKey = DigestUtils.md5Hex(
                     REQ_PROPERTY_KEY
-                            + (StringUtils.isNotBlank(cached.key()) ? ("/" + cached.key()) : "")
-                            + "/" + uriInfo.getPath()
+                            + "/"
+                            + (StringUtils.isNotBlank(cached.key()) ?
+                            cached.key() :
+                            uriInfo.getPath())
                             + (cached.keyWithQuery() && query != null ? ("?" + query) : ""));
 
             Object cache;

@@ -14,12 +14,16 @@ import java.util.Map;
  *
  * @author icode
  */
-public abstract class Cache {
+public class Cache {
 
     /**
      * 缓存引擎
      */
     static CacheEngine<String, Object> cacheEngine;
+
+    private Cache() {
+
+    }
 
     /**
      * Add an element only if it doesn't exist.

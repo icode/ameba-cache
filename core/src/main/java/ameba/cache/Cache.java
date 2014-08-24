@@ -380,6 +380,7 @@ public class Cache {
         @Override
         @SuppressWarnings("unchecked")
         public boolean configure(FeatureContext context) {
+            if (cacheEngine != null) return true;
             String engine = (String) context.getConfiguration().getProperty("cache.engine");
             if (StringUtils.isNoneBlank(engine)) {
                 cacheEngine = (CacheEngine<String, Object>) ClassUtils.newInstance(engine);

@@ -219,7 +219,7 @@ public class Cache {
         return cacheEngine.syncSet(key, value, expiration);
     }
 
-    public static Object gat(String key, int expiration) {
+    public static <V> V gat(String key, int expiration) {
         return cacheEngine.gat(key, expiration);
     }
 

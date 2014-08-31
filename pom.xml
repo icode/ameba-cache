@@ -6,7 +6,7 @@
 
     <groupId>org.amebastack.module</groupId>
     <artifactId>ameba-cache</artifactId>
-    <version>0.1.0</version>
+    <version>0.1.1</version>
     <modules>
         <module>core</module>
         <module>memcached</module>
@@ -162,11 +162,6 @@
         </dependency>
         <dependency>
             <groupId>org.amebastack</groupId>
-            <artifactId>ameba-utils</artifactId>
-            <version>${ameba.utils.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.amebastack</groupId>
             <artifactId>ameba</artifactId>
             <version>${ameba.version}</version>
             <scope>provided</scope>
@@ -179,8 +174,7 @@
         </dependency>
     </dependencies>
     <properties>
-        <ameba.version>0.1.6</ameba.version>
-        <ameba.utils.version>0.1.6</ameba.utils.version>
+        <ameba.version>0.1.6a</ameba.version>
         <slf4j.version>1.7.7</slf4j.version>
         <logback.version>1.1.2</logback.version>
         <jaxrs.api.version>2.0</jaxrs.api.version>

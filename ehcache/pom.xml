@@ -9,6 +9,8 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
+    <version>0.1.2</version>
+
     <artifactId>ameba-cache-ehcache</artifactId>
 
     <name>Ameba-Framework-Cache-Ehcache</name>

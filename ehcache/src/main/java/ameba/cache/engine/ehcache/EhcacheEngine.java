@@ -1,12 +1,14 @@
 package ameba.cache.engine.ehcache;
 
 import ameba.cache.CacheEngine;
+import ameba.util.IOUtils;
 import com.google.common.collect.Maps;
 import net.sf.ehcache.CacheManager;
 import net.sf.ehcache.Element;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.ws.rs.core.FeatureContext;
+import java.net.URL;
 import java.util.Map;
 
 /**
@@ -19,7 +21,11 @@ public class EhcacheEngine<K, V> extends CacheEngine<K, V> {
     private net.sf.ehcache.Cache cache;
 
     public EhcacheEngine() {
-        this.cacheManager = CacheManager.create();
+        URL cfgUrl = IOUtils.getResource("conf/ehcache.xml");
+        if (cfgUrl != null)
+            this.cacheManager = CacheManager.create(cfgUrl);
+        else
+            this.cacheManager = CacheManager.create();
     }
 
     public EhcacheEngine(String cacheName) {

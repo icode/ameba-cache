@@ -201,7 +201,7 @@ public class MemcachedEngine<K, V> extends CacheEngine<K, V> {
         }
     }
 
-    private void configureCache(Map<String, Object> properties, GrizzlyMemcachedCache.Builder<K, V> cacheBuilder) {
+    private <KEY, VALUE> void configureCache(Map<String, Object> properties, GrizzlyMemcachedCache.Builder<KEY, VALUE> cacheBuilder) {
         Set<SocketAddress> servers = Sets.newHashSet();
 
         for (String key : properties.keySet()) {
@@ -299,7 +299,7 @@ public class MemcachedEngine<K, V> extends CacheEngine<K, V> {
         this.cache = _create(cacheName);
     }
 
-    public org.glassfish.grizzly.memcached.MemcachedCache<K, V> _create(String name) {
+    public <KEY, VALUE> org.glassfish.grizzly.memcached.MemcachedCache<KEY, VALUE> _create(String name) {
         GrizzlyMemcachedCacheManager.Builder builder = new GrizzlyMemcachedCacheManager.Builder();
 
         configureCacheManager(properties, builder);
@@ -307,7 +307,7 @@ public class MemcachedEngine<K, V> extends CacheEngine<K, V> {
         GrizzlyMemcachedCacheManager manager = builder.build();
 
 
-        GrizzlyMemcachedCache.Builder<K, V> cacheBuilder = manager.createCacheBuilder(name);
+        GrizzlyMemcachedCache.Builder<KEY, VALUE> cacheBuilder = manager.createCacheBuilder(name);
 
         configureCache(properties, cacheBuilder);
 
@@ -315,8 +315,8 @@ public class MemcachedEngine<K, V> extends CacheEngine<K, V> {
     }
 
     @Override
-    public CacheEngine<K, V> create(String name) {
-        return new MemcachedEngine<K, V>(_create(name));
+    public <KEY, VALUE> CacheEngine<KEY, VALUE> create(String name) {
+        return new MemcachedEngine<KEY, VALUE>(this.<KEY, VALUE>_create(name));
     }
 
     @Override

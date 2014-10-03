@@ -191,7 +191,7 @@ public class EhcacheEngine<K, V> extends CacheEngine<K, V> {
     }
 
     @Override
-    public CacheEngine create(String name) {
+    public <KEY, VALUE> CacheEngine<KEY, VALUE> create(String name) {
         return createEngine(name);
     }
 }

@@ -375,7 +375,7 @@ public class Cache {
         }
     }
 
-    public static CacheEngine createEngine(String name) {
+    public static <K, V> CacheEngine<K, V> createEngine(String name) {
         return cacheEngine.create(name);
     }
 

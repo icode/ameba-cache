@@ -23,6 +23,7 @@ import java.util.Set;
  */
 public class MemcachedEngine<K, V> extends CacheEngine<K, V> {
     org.glassfish.grizzly.memcached.MemcachedCache<K, V> cache;
+    private Map<String, Object> properties;
 
     private MemcachedEngine(org.glassfish.grizzly.memcached.MemcachedCache<K, V> cache) {
         this.cache = cache;
@@ -291,21 +292,31 @@ public class MemcachedEngine<K, V> extends CacheEngine<K, V> {
 
     @Override
     protected void configure(FeatureContext context) {
-        Map<String, Object> properties = context.getConfiguration().getProperties();
+        properties = context.getConfiguration().getProperties();
 
+        String cacheName = StringUtils.defaultIfBlank((String) properties.get("cache.name"), DEFAULT_CACHE_NAME);
+
+        this.cache = _create(cacheName);
+    }
+
+    public org.glassfish.grizzly.memcached.MemcachedCache<K, V> _create(String name) {
         GrizzlyMemcachedCacheManager.Builder builder = new GrizzlyMemcachedCacheManager.Builder();
 
         configureCacheManager(properties, builder);
 
         GrizzlyMemcachedCacheManager manager = builder.build();
 
-        String cacheName = StringUtils.defaultIfBlank((String) properties.get("cache.name"), DEFAULT_CACHE_NAME);
 
-        GrizzlyMemcachedCache.Builder<K, V> cacheBuilder = manager.createCacheBuilder(cacheName);
+        GrizzlyMemcachedCache.Builder<K, V> cacheBuilder = manager.createCacheBuilder(name);
 
         configureCache(properties, cacheBuilder);
 
-        this.cache = cacheBuilder.build();
+        return cacheBuilder.build();
+    }
+
+    @Override
+    public CacheEngine<K, V> create(String name) {
+        return new MemcachedEngine<K, V>(_create(name));
     }
 
     @Override

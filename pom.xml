@@ -6,7 +6,7 @@
 
     <groupId>org.amebastack.module</groupId>
     <artifactId>ameba-cache</artifactId>
-    <version>0.1.1</version>
+    <version>0.1.2</version>
     <modules>
         <module>core</module>
         <module>memcached</module>

@@ -375,6 +375,10 @@ public class Cache {
         }
     }
 
+    public static CacheEngine createEngine(String name) {
+        return cacheEngine.create(name);
+    }
+
     public static class Feature implements javax.ws.rs.core.Feature {
 
         @Override

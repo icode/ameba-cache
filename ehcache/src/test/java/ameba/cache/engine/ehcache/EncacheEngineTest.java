@@ -19,7 +19,7 @@ public class EncacheEngineTest {
 
     @Before
     public void init() {
-        engine = EhcacheEngine.create();
+        engine = EhcacheEngine.createEngine();
     }
 
     @After

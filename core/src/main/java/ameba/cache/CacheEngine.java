@@ -50,4 +50,6 @@ public abstract class CacheEngine<K, V> {
     public abstract void stop();
 
     protected abstract void configure(FeatureContext context);
+
+    public abstract CacheEngine create(String name);
 }

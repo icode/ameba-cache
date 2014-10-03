@@ -34,12 +34,12 @@ public class EhcacheEngine<K, V> extends CacheEngine<K, V> {
         cache = cacheManager.getCache(cacheName);
     }
 
-    public static <K, V> EhcacheEngine<K, V> create(String cacheName) {
+    public static <K, V> EhcacheEngine<K, V> createEngine(String cacheName) {
         return new EhcacheEngine<K, V>(cacheName);
     }
 
-    public static <K, V> EhcacheEngine<K, V> create() {
-        return create(DEFAULT_CACHE_NAME);
+    public static <K, V> EhcacheEngine<K, V> createEngine() {
+        return createEngine(DEFAULT_CACHE_NAME);
     }
 
     @Override
@@ -188,5 +188,10 @@ public class EhcacheEngine<K, V> extends CacheEngine<K, V> {
         String cacheName = StringUtils.defaultIfBlank((String) properties.get("cache.name"), DEFAULT_CACHE_NAME);
         cacheManager.addCache(cacheName);
         cache = cacheManager.getCache(cacheName);
+    }
+
+    @Override
+    public CacheEngine create(String name) {
+        return createEngine(name);
     }
 }

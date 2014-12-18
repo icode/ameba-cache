@@ -105,7 +105,7 @@
     </profiles>
 
     <properties>
-        <ameba.container.version>${ameba.version}</ameba.container.version>
+        <ameba.container.version>0.1.6c</ameba.container.version>
         <grizzly.ext.memcached.version>1.3.10</grizzly.ext.memcached.version>
     </properties>
 

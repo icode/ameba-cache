@@ -1,6 +1,6 @@
 package ameba.cache;
 
-import ameba.exceptions.AmebaException;
+import ameba.exception.AmebaException;
 
 /**
  * @author icode

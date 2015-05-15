@@ -35,7 +35,7 @@ public class EhcacheEngine<K, V> extends CacheEngine<K, V> {
     }
 
     public static <K, V> EhcacheEngine<K, V> createEngine(String cacheName) {
-        return new EhcacheEngine<K, V>(cacheName);
+        return new EhcacheEngine<>(cacheName);
     }
 
     public static <K, V> EhcacheEngine<K, V> createEngine() {
@@ -75,15 +75,13 @@ public class EhcacheEngine<K, V> extends CacheEngine<K, V> {
 
     @Override
     public void replace(K key, V value, int expiration) {
-        if (cache.getQuiet(key) == null) {
-            return;
-        }
         set(key, value, expiration);
     }
 
     @Override
     public boolean syncReplace(K key, V value, int expiration) {
-        return get(key) != null && syncSet(key, value, expiration);
+        // 不存在返回false，并执行设置
+        return get(key) != null & syncSet(key, value, expiration);
     }
 
     @Override
@@ -96,15 +94,16 @@ public class EhcacheEngine<K, V> extends CacheEngine<K, V> {
     @Override
     @SuppressWarnings("unchecked")
     public <O> O gat(K key, int expiration) {
-        Element e = cache.getQuiet(key);
+        // get method auto update AccessStatistics
+        Element e = cache.get(key);
         if (e == null) return null;
-        set(key, (V) e.getObjectValue(), expiration);
         return (O) e.getObjectValue();
     }
 
     @Override
     public boolean touch(K key, int expiration) {
-        return get(key) != null;
+        // get method auto update AccessStatistics
+        return cache.get(key) != null;
     }
 
     @Override
@@ -133,10 +132,10 @@ public class EhcacheEngine<K, V> extends CacheEngine<K, V> {
         if (e != null) {
             newValue = ((Number) e.getObjectValue()).longValue() + by;
         }
-        return syncSet1(key, newValue, expirationInSecs) ? newValue : -1;
+        return _syncSet(key, newValue, expirationInSecs) ? newValue : -1;
     }
 
-    private boolean syncSet1(K key, long value, int expiration) {
+    private boolean _syncSet(K key, long value, int expiration) {
         try {
             Element newE = new Element(key, value);
             if (expiration > 0)
@@ -155,7 +154,7 @@ public class EhcacheEngine<K, V> extends CacheEngine<K, V> {
         if (e != null) {
             newValue = ((Number) e.getObjectValue()).longValue() - by;
         }
-        return syncSet1(key, newValue, expirationInSecs) ? newValue : -1;
+        return _syncSet(key, newValue, expirationInSecs) ? newValue : -1;
     }
 
     @Override

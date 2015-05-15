@@ -59,7 +59,7 @@ public class EhcacheEngine<K, V> extends CacheEngine<K, V> {
     public void set(K key, V value, int expiration) {
         Element element = new Element(key, value);
         if (expiration > 0)
-            element.setTimeToLive(expiration);
+            element.setTimeToIdle(expiration);
         cache.put(element);
     }
 
@@ -97,6 +97,8 @@ public class EhcacheEngine<K, V> extends CacheEngine<K, V> {
         // get method auto update AccessStatistics
         Element e = cache.get(key);
         if (e == null) return null;
+        if (expiration > 0)
+            e.setTimeToIdle(expiration);
         return (O) e.getObjectValue();
     }
 
@@ -139,7 +141,7 @@ public class EhcacheEngine<K, V> extends CacheEngine<K, V> {
         try {
             Element newE = new Element(key, value);
             if (expiration > 0)
-                newE.setTimeToLive(expiration);
+                newE.setTimeToIdle(expiration);
             cache.put(newE);
         } catch (Exception e) {
             return false;

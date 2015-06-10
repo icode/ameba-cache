@@ -133,7 +133,7 @@ public class MemcachedEngine<K, V> extends CacheEngine<K, V> {
     }
 
     @Override
-    public void stop() {
+    public void shutdown() {
         this.cache.stop();
     }
 

@@ -47,7 +47,7 @@ public abstract class CacheEngine<K, V> {
 
     public abstract boolean syncDelete(K key);
 
-    public abstract void stop();
+    public abstract void shutdown();
 
     protected abstract void configure(FeatureContext context);
 

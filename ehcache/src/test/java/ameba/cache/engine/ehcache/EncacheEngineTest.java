@@ -24,7 +24,7 @@ public class EncacheEngineTest {
 
     @After
     public void tearDown() throws Exception {
-        engine.stop();
+        engine.shutdown();
     }
 
     @Test

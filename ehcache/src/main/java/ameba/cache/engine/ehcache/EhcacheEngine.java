@@ -179,7 +179,7 @@ public class EhcacheEngine<K, V> extends CacheEngine<K, V> {
     }
 
     @Override
-    public void stop() {
+    public void shutdown() {
         cacheManager.shutdown();
     }
 

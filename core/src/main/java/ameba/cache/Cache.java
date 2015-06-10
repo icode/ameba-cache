@@ -1,5 +1,8 @@
 package ameba.cache;
 
+import ameba.container.Container;
+import ameba.event.Listener;
+import ameba.event.SystemEventBus;
 import ameba.util.ClassUtils;
 import ameba.util.Times;
 import org.apache.commons.lang3.StringUtils;
@@ -363,7 +366,7 @@ public class Cache {
      * Stop the cache system.
      */
     public static void stop() {
-        cacheEngine.stop();
+        cacheEngine.shutdown();
     }
 
     /**
@@ -387,10 +390,18 @@ public class Cache {
             if (cacheEngine != null) return true;
             String engine = (String) context.getConfiguration().getProperty("cache.engine");
             if (StringUtils.isNoneBlank(engine)) {
-                cacheEngine = (CacheEngine<String, Object>) ClassUtils.newInstance(engine);
+                cacheEngine = ClassUtils.newInstance(engine);
                 cacheEngine.configure(context);
                 context.register(CacheRequestFilter.class)
                         .register(CacheResponseFilter.class);
+
+                SystemEventBus.subscribe(Container.ShutdownEvent.class, new Listener<Container.ShutdownEvent>() {
+                    @Override
+                    public void onReceive(Container.ShutdownEvent event) {
+                        cacheEngine.shutdown();
+                    }
+                });
+
                 return true;
             } else
                 return false;

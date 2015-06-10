@@ -27,7 +27,7 @@ public class MemcachedEngineTest {
 
     @After
     public void tearDown() throws Exception {
-        engine.stop();
+        engine.shutdown();
     }
 
     @Test

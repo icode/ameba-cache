@@ -2,6 +2,7 @@ package ameba.cache;
 
 import ameba.cache.util.Serializations;
 import ameba.container.Container;
+import ameba.core.Application;
 import ameba.db.DataSourceManager;
 import ameba.db.model.ModelManager;
 import ameba.event.Listener;
@@ -10,6 +11,7 @@ import ameba.util.ClassUtils;
 import ameba.util.Times;
 import org.apache.commons.lang3.StringUtils;
 
+import javax.inject.Inject;
 import javax.ws.rs.core.FeatureContext;
 import java.util.Map;
 import java.util.Set;
@@ -200,11 +202,11 @@ public class Cache {
     }
 
     public static void add(String key, Object value, int expiration) {
-        cacheEngine.add(key, Serializations.toBytes(value), expiration);
+        cacheEngine.add(key, Serializations.asBytes(value), expiration);
     }
 
     public static boolean syncAdd(String key, Object value, int expiration) {
-        return cacheEngine.syncAdd(key, Serializations.toBytes(value), expiration);
+        return cacheEngine.syncAdd(key, Serializations.asBytes(value), expiration);
     }
 
 
@@ -213,7 +215,7 @@ public class Cache {
     }
 
     public static boolean syncSet(String key, Object value, int expiration) {
-        return cacheEngine.syncSet(key, Serializations.toBytes(value), expiration);
+        return cacheEngine.syncSet(key, Serializations.asBytes(value), expiration);
     }
 
     public static boolean syncSet(String key, Object value) {
@@ -221,11 +223,11 @@ public class Cache {
     }
 
     public static <V> V gat(String key, int expiration) {
-        return Serializations.toObject(cacheEngine.gat(key, expiration));
+        return Serializations.asObject(cacheEngine.gat(key, expiration));
     }
 
     public static boolean syncReplace(String key, Object value, int expiration) {
-        return cacheEngine.syncReplace(key, Serializations.toBytes(value), expiration);
+        return cacheEngine.syncReplace(key, Serializations.asBytes(value), expiration);
     }
 
     public static boolean syncReplace(String key, Object value) {
@@ -237,11 +239,11 @@ public class Cache {
     }
 
     public static void replace(String key, Object value, int expiration) {
-        cacheEngine.replace(key, Serializations.toBytes(value), expiration);
+        cacheEngine.replace(key, Serializations.asBytes(value), expiration);
     }
 
     public static void set(String key, Object value, int expiration) {
-        cacheEngine.set(key, Serializations.toBytes(value), expiration);
+        cacheEngine.set(key, Serializations.asBytes(value), expiration);
     }
 
     /**
@@ -321,7 +323,7 @@ public class Cache {
     public static Map<String, Object> get(String... key) {
         Map<String, Object> result = cacheEngine.get(key);
         for (Map.Entry<String, Object> entry : result.entrySet()) {
-            entry.setValue(Serializations.toObject(entry.getValue()));
+            entry.setValue(Serializations.asObject(entry.getValue()));
         }
         return result;
     }
@@ -362,7 +364,7 @@ public class Cache {
      */
     @SuppressWarnings("unchecked")
     public static <T> T get(String key) {
-        return Serializations.toObject(cacheEngine.get(key));
+        return Serializations.asObject(cacheEngine.get(key));
     }
 
     /**
@@ -379,7 +381,7 @@ public class Cache {
 
     public static Map<String, Boolean> syncSet(Map<String, Object> map, int expirationInSecs) {
         for (Map.Entry<String, Object> entry : map.entrySet()) {
-            entry.setValue(Serializations.toBytes(entry.getValue()));
+            entry.setValue(Serializations.asBytes(entry.getValue()));
         }
         return cacheEngine.syncSet(map, expirationInSecs);
     }
@@ -415,6 +417,8 @@ public class Cache {
                         cacheEngine.shutdown();
                     }
                 });
+
+                Serializations.reinit();
 
                 for (String name : DataSourceManager.getDataSourceNames()) {
                     Set<Class> classSet = ModelManager.getModels(name);

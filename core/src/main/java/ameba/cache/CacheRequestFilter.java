@@ -1,6 +1,7 @@
 package ameba.cache;
 
-import org.apache.commons.codec.digest.DigestUtils;
+import com.google.common.base.Charsets;
+import com.google.common.hash.Hashing;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Priority;
@@ -32,13 +33,14 @@ public class CacheRequestFilter extends CacheFilter implements ContainerRequestF
 
         if (cached != null) {
             String query = uriInfo.getRequestUri().getQuery();
-            String cacheKey = DigestUtils.md5Hex(
+            String cacheKey = Hashing.md5().hashString(
                     REQ_PROPERTY_KEY
                             + "/"
                             + (StringUtils.isNotBlank(cached.key()) ?
                             cached.key() :
                             uriInfo.getPath())
-                            + (cached.keyWithQuery() && query != null ? ("?" + query) : ""));
+                            + (cached.keyWithQuery() && query != null ? ("?" + query) : ""), Charsets.UTF_8)
+                    .toString();
 
             Object cache;
             if (cached.touch())

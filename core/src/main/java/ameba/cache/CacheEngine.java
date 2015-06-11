@@ -31,6 +31,7 @@ public abstract class CacheEngine<K, V> {
 
     public abstract boolean touch(K key, int expiration);
 
+    @SuppressWarnings("unchecked")
     public abstract Map<K, V> get(K... keys);
 
     public abstract void incr(K key, int by, final long initial, final int expirationInSecs);
@@ -47,9 +48,15 @@ public abstract class CacheEngine<K, V> {
 
     public abstract boolean syncDelete(K key);
 
+    @SuppressWarnings("unchecked")
+    public abstract Map<K, Boolean> syncDelete(K... keys);
+
+    public abstract Map<K, Boolean> syncSet(Map<K, V> map, int expirationInSecs);
+
     public abstract void shutdown();
 
     protected abstract void configure(FeatureContext context);
+
 
     public abstract <KEY, VALUE> CacheEngine<KEY, VALUE> create(String name);
 }

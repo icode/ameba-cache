@@ -14,6 +14,7 @@ import org.glassfish.grizzly.memcached.zookeeper.ZooKeeperConfig;
 import javax.ws.rs.core.FeatureContext;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -33,19 +34,19 @@ public class MemcachedEngine<K, V> extends CacheEngine<K, V> {
     }
 
     public static <K, V> MemcachedEngine<K, V> create(Set<SocketAddress> servers) {
-        return new MemcachedEngine<K, V>(MemcachedCache.<K, V>create(servers));
+        return new MemcachedEngine<>(MemcachedCache.<K, V>create(servers));
     }
 
     public static <K, V> MemcachedEngine<K, V> create(GrizzlyMemcachedCacheManager manager, Set<SocketAddress> servers) {
-        return new MemcachedEngine<K, V>(MemcachedCache.<K, V>create(manager, servers));
+        return new MemcachedEngine<>(MemcachedCache.<K, V>create(manager, servers));
     }
 
     public static <K, V> MemcachedEngine<K, V> create(String cacheName, GrizzlyMemcachedCacheManager manager, Set<SocketAddress> servers) {
-        return new MemcachedEngine<K, V>(MemcachedCache.<K, V>create(cacheName, manager, servers));
+        return new MemcachedEngine<>(MemcachedCache.<K, V>create(cacheName, manager, servers));
     }
 
     public static <K, V> MemcachedEngine<K, V> create(org.glassfish.grizzly.memcached.MemcachedCache<K, V> cache) {
-        return new MemcachedEngine<K, V>(cache);
+        return new MemcachedEngine<>(cache);
     }
 
     @Override
@@ -85,8 +86,9 @@ public class MemcachedEngine<K, V> extends CacheEngine<K, V> {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public Map<K, V> get(K... keys) {
-        return cache.getMulti(Sets.newHashSet(keys));
+        return cache.getMulti(keys == null ? null : Sets.newLinkedHashSet(Arrays.asList(keys)));
     }
 
     @Override
@@ -133,8 +135,275 @@ public class MemcachedEngine<K, V> extends CacheEngine<K, V> {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
+    public Map<K, Boolean> syncDelete(K... keys) {
+        return cache.deleteMulti(keys == null ? null : Sets.newLinkedHashSet(Arrays.asList(keys)));
+    }
+
+    @Override
+    public Map<K, Boolean> syncSet(Map<K, V> map, int expirationInSecs) {
+        return cache.setMulti(map, expirationInSecs);
+    }
+
+    @Override
     public void shutdown() {
         this.cache.stop();
+    }
+
+    @Override
+    public <KEY, VALUE> CacheEngine<KEY, VALUE> create(String name) {
+        return new MemcachedEngine<>(this.<KEY, VALUE>_create(name));
+    }
+
+    @Override
+    public boolean touch(K key, int expirationInSecs) {
+        return cache.touch(key, expirationInSecs);
+    }
+
+    public boolean set(K key, V value, int expirationInSecs, boolean noReply, long writeTimeoutInMillis, long responseTimeoutInMillis) {
+        return cache.set(key, value, expirationInSecs, noReply, writeTimeoutInMillis, responseTimeoutInMillis);
+    }
+
+    public long decr(K key, long delta, long initial, int expirationInSecs, boolean noReply, long writeTimeoutInMillis, long responseTimeoutInMillis) {
+        return cache.decr(key, delta, initial, expirationInSecs, noReply, writeTimeoutInMillis, responseTimeoutInMillis);
+    }
+
+    public boolean noop(SocketAddress address, long writeTimeoutInMillis, long responseTimeoutInMillis) {
+        return cache.noop(address, writeTimeoutInMillis, responseTimeoutInMillis);
+    }
+
+    public String version(SocketAddress address) {
+        return cache.version(address);
+    }
+
+    public Map<String, String> statsItems(SocketAddress address, String item, long writeTimeoutInMillis, long responseTimeoutInMillis) {
+        return cache.statsItems(address, item, writeTimeoutInMillis, responseTimeoutInMillis);
+    }
+
+    public boolean touch(K key, int expirationInSecs, long writeTimeoutInMillis, long responseTimeoutInMillis) {
+        return cache.touch(key, expirationInSecs, writeTimeoutInMillis, responseTimeoutInMillis);
+    }
+
+    public boolean quit(SocketAddress address, boolean noReply) {
+        return cache.quit(address, noReply);
+    }
+
+    public boolean add(K key, V value, int expirationInSecs, boolean noReply, long writeTimeoutInMillis, long responseTimeoutInMillis) {
+        return cache.add(key, value, expirationInSecs, noReply, writeTimeoutInMillis, responseTimeoutInMillis);
+    }
+
+    public boolean verbosity(SocketAddress address, int verbosity, long writeTimeoutInMillis, long responseTimeoutInMillis) {
+        return cache.verbosity(address, verbosity, writeTimeoutInMillis, responseTimeoutInMillis);
+    }
+
+    public long incr(K key, long delta, long initial, int expirationInSecs, boolean noReply) {
+        return cache.incr(key, delta, initial, expirationInSecs, noReply);
+    }
+
+    public boolean replace(K key, V value, int expirationInSecs, boolean noReply, long writeTimeoutInMillis, long responseTimeoutInMillis) {
+        return cache.replace(key, value, expirationInSecs, noReply, writeTimeoutInMillis, responseTimeoutInMillis);
+    }
+
+    public boolean append(K key, V value, boolean noReply, long writeTimeoutInMillis, long responseTimeoutInMillis) {
+        return cache.append(key, value, noReply, writeTimeoutInMillis, responseTimeoutInMillis);
+    }
+
+    public V gat(K key, int expirationInSecs, boolean noReplys) {
+        return cache.gat(key, expirationInSecs, noReplys);
+    }
+
+    public boolean append(K key, V value, boolean noReply) {
+        return cache.append(key, value, noReply);
+    }
+
+    public Map<K, Boolean> casMulti(Map<K, ValueWithCas<V>> map, int expirationInSecs) {
+        return cache.casMulti(map, expirationInSecs);
+    }
+
+    public V get(K key, boolean noReply) {
+        return cache.get(key, noReply);
+    }
+
+    public boolean delete(K key, boolean noReply, long writeTimeoutInMillis, long responseTimeoutInMillis) {
+        return cache.delete(key, noReply, writeTimeoutInMillis, responseTimeoutInMillis);
+    }
+
+    public boolean verbosity(SocketAddress address, int verbosity) {
+        return cache.verbosity(address, verbosity);
+    }
+
+    public boolean quit(SocketAddress address, boolean noReply, long writeTimeoutInMillis, long responseTimeoutInMillis) {
+        return cache.quit(address, noReply, writeTimeoutInMillis, responseTimeoutInMillis);
+    }
+
+    public void removeServer(SocketAddress serverAddress) {
+        cache.removeServer(serverAddress);
+    }
+
+    public boolean addServer(SocketAddress serverAddress) {
+        return cache.addServer(serverAddress);
+    }
+
+    public boolean replace(K key, V value, int expirationInSecs, boolean noReply) {
+        return cache.replace(key, value, expirationInSecs, noReply);
+    }
+
+    public String saslAuth(SocketAddress address, String mechanism, byte[] data) {
+        return cache.saslAuth(address, mechanism, data);
+    }
+
+    public String version(SocketAddress address, long writeTimeoutInMillis, long responseTimeoutInMillis) {
+        return cache.version(address, writeTimeoutInMillis, responseTimeoutInMillis);
+    }
+
+    public boolean isInServerList(SocketAddress serverAddress) {
+        return cache.isInServerList(serverAddress);
+    }
+
+    public boolean add(K key, V value, int expirationInSecs, boolean noReply) {
+        return cache.add(key, value, expirationInSecs, noReply);
+    }
+
+    public ValueWithKey<K, V> getKey(K key, boolean noReply) {
+        return cache.getKey(key, noReply);
+    }
+
+    public Map<K, Boolean> deleteMulti(Set<K> keys, long writeTimeoutInMillis, long responseTimeoutInMillis) {
+        return cache.deleteMulti(keys, writeTimeoutInMillis, responseTimeoutInMillis);
+    }
+
+    public boolean prepend(K key, V value, boolean noReply, long writeTimeoutInMillis, long responseTimeoutInMillis) {
+        return cache.prepend(key, value, noReply, writeTimeoutInMillis, responseTimeoutInMillis);
+    }
+
+    public Map<String, String> statsItems(SocketAddress address, String item) {
+        return cache.statsItems(address, item);
+    }
+
+    public ValueWithKey<K, V> getKey(K key, boolean noReply, long writeTimeoutInMillis, long responseTimeoutInMillis) {
+        return cache.getKey(key, noReply, writeTimeoutInMillis, responseTimeoutInMillis);
+    }
+
+    public Map<K, V> getMulti(Set<K> keys, long writeTimeoutInMillis, long responseTimeoutInMillis) {
+        return cache.getMulti(keys, writeTimeoutInMillis, responseTimeoutInMillis);
+    }
+
+    public boolean cas(K key, V value, int expirationInSecs, long cas, boolean noReply, long writeTimeoutInMillis, long responseTimeoutInMillis) {
+        return cache.cas(key, value, expirationInSecs, cas, noReply, writeTimeoutInMillis, responseTimeoutInMillis);
+    }
+
+    public V gat(K key, int expirationInSecs, boolean noReply, long writeTimeoutInMillis, long responseTimeoutInMillis) {
+        return cache.gat(key, expirationInSecs, noReply, writeTimeoutInMillis, responseTimeoutInMillis);
+    }
+
+    public Map<String, String> stats(SocketAddress address) {
+        return cache.stats(address);
+    }
+
+    public Map<K, Boolean> casMulti(Map<K, ValueWithCas<V>> map, int expirationInSecs, long writeTimeoutInMillis, long responseTimeoutInMillis) {
+        return cache.casMulti(map, expirationInSecs, writeTimeoutInMillis, responseTimeoutInMillis);
+    }
+
+    public boolean prepend(K key, V value, boolean noReply) {
+        return cache.prepend(key, value, noReply);
+    }
+
+    public boolean flushAll(SocketAddress address, int expirationInSecs, boolean noReply) {
+        return cache.flushAll(address, expirationInSecs, noReply);
+    }
+
+    public String saslStep(SocketAddress address, String mechanism, byte[] data) {
+        return cache.saslStep(address, mechanism, data);
+    }
+
+    public long decr(K key, long delta, long initial, int expirationInSecs, boolean noReply) {
+        return cache.decr(key, delta, initial, expirationInSecs, noReply);
+    }
+
+    public boolean set(K key, V value, int expirationInSecs, boolean noReply) {
+        return cache.set(key, value, expirationInSecs, noReply);
+    }
+
+    public ValueWithCas<V> gets(K key, boolean noReply) {
+        return cache.gets(key, noReply);
+    }
+
+    public List<SocketAddress> getCurrentServerList() {
+        return cache.getCurrentServerList();
+    }
+
+    public boolean cas(K key, V value, int expirationInSecs, long cas, boolean noReplys) {
+        return cache.cas(key, value, expirationInSecs, cas, noReplys);
+    }
+
+    public ValueWithCas<V> gets(K key, boolean noReply, long writeTimeoutInMillis, long responseTimeoutInMillis) {
+        return cache.gets(key, noReply, writeTimeoutInMillis, responseTimeoutInMillis);
+    }
+
+    public String getName() {
+        return cache.getName();
+    }
+
+    public String saslAuth(SocketAddress address, String mechanism, byte[] data, long writeTimeoutInMillis, long responseTimeoutInMillis) {
+        return cache.saslAuth(address, mechanism, data, writeTimeoutInMillis, responseTimeoutInMillis);
+    }
+
+    public Map<K, ValueWithCas<V>> getsMulti(Set<K> keys) {
+        return cache.getsMulti(keys);
+    }
+
+    public boolean delete(K key, boolean noReply) {
+        return cache.delete(key, noReply);
+    }
+
+    public boolean flushAll(SocketAddress address, int expirationInSecs, boolean noReply, long writeTimeoutInMillis, long responseTimeoutInMillis) {
+        return cache.flushAll(address, expirationInSecs, noReply, writeTimeoutInMillis, responseTimeoutInMillis);
+    }
+
+    public boolean noop(SocketAddress addresss) {
+        return cache.noop(addresss);
+    }
+
+    public Map<K, ValueWithCas<V>> getsMulti(Set<K> keys, long writeTimeoutInMillis, long responseTimeoutInMillis) {
+        return cache.getsMulti(keys, writeTimeoutInMillis, responseTimeoutInMillis);
+    }
+
+    public Map<String, String> stats(SocketAddress address, long writeTimeoutInMillis, long responseTimeoutInMillis) {
+        return cache.stats(address, writeTimeoutInMillis, responseTimeoutInMillis);
+    }
+
+    public String saslStep(SocketAddress address, String mechanism, byte[] data, long writeTimeoutInMillis, long responseTimeoutInMillis) {
+        return cache.saslStep(address, mechanism, data, writeTimeoutInMillis, responseTimeoutInMillis);
+    }
+
+    public Map<K, Boolean> setMulti(Map<K, V> map, int expirationInSecs, long writeTimeoutInMillis, long responseTimeoutInMillis) {
+        return cache.setMulti(map, expirationInSecs, writeTimeoutInMillis, responseTimeoutInMillis);
+    }
+
+    public String saslList(SocketAddress address) {
+        return cache.saslList(address);
+    }
+
+    public long incr(K key, long delta, long initial, int expirationInSecs, boolean noReply, long writeTimeoutInMillis, long responseTimeoutInMillis) {
+        return cache.incr(key, delta, initial, expirationInSecs, noReply, writeTimeoutInMillis, responseTimeoutInMillis);
+    }
+
+    public V get(K key, boolean noReply, long writeTimeoutInMillis, long responseTimeoutInMillis) {
+        return cache.get(key, noReply, writeTimeoutInMillis, responseTimeoutInMillis);
+    }
+
+    public String saslList(SocketAddress address, long writeTimeoutInMillis, long responseTimeoutInMillis) {
+        return cache.saslList(address, writeTimeoutInMillis, responseTimeoutInMillis);
+    }
+
+
+    @Override
+    protected void configure(FeatureContext context) {
+        properties = context.getConfiguration().getProperties();
+
+        String cacheName = StringUtils.defaultIfBlank((String) properties.get("cache.name"), DEFAULT_CACHE_NAME);
+
+        this.cache = _create(cacheName);
     }
 
     private void configureZooKeeper(Map<String, Object> properties, GrizzlyMemcachedCacheManager.Builder builder) {
@@ -290,15 +559,6 @@ public class MemcachedEngine<K, V> extends CacheEngine<K, V> {
             cacheBuilder.writeTimeoutInMillis(Long.parseLong(writeTimeoutInMillis));
     }
 
-    @Override
-    protected void configure(FeatureContext context) {
-        properties = context.getConfiguration().getProperties();
-
-        String cacheName = StringUtils.defaultIfBlank((String) properties.get("cache.name"), DEFAULT_CACHE_NAME);
-
-        this.cache = _create(cacheName);
-    }
-
     public <KEY, VALUE> org.glassfish.grizzly.memcached.MemcachedCache<KEY, VALUE> _create(String name) {
         GrizzlyMemcachedCacheManager.Builder builder = new GrizzlyMemcachedCacheManager.Builder();
 
@@ -312,260 +572,6 @@ public class MemcachedEngine<K, V> extends CacheEngine<K, V> {
         configureCache(properties, cacheBuilder);
 
         return cacheBuilder.build();
-    }
-
-    @Override
-    public <KEY, VALUE> CacheEngine<KEY, VALUE> create(String name) {
-        return new MemcachedEngine<KEY, VALUE>(this.<KEY, VALUE>_create(name));
-    }
-
-    @Override
-    public boolean touch(K key, int expirationInSecs) {
-        return cache.touch(key, expirationInSecs);
-    }
-
-    public boolean set(K key, V value, int expirationInSecs, boolean noReply, long writeTimeoutInMillis, long responseTimeoutInMillis) {
-        return cache.set(key, value, expirationInSecs, noReply, writeTimeoutInMillis, responseTimeoutInMillis);
-    }
-
-    public long decr(K key, long delta, long initial, int expirationInSecs, boolean noReply, long writeTimeoutInMillis, long responseTimeoutInMillis) {
-        return cache.decr(key, delta, initial, expirationInSecs, noReply, writeTimeoutInMillis, responseTimeoutInMillis);
-    }
-
-    public boolean noop(SocketAddress address, long writeTimeoutInMillis, long responseTimeoutInMillis) {
-        return cache.noop(address, writeTimeoutInMillis, responseTimeoutInMillis);
-    }
-
-    public String version(SocketAddress address) {
-        return cache.version(address);
-    }
-
-    public Map<String, String> statsItems(SocketAddress address, String item, long writeTimeoutInMillis, long responseTimeoutInMillis) {
-        return cache.statsItems(address, item, writeTimeoutInMillis, responseTimeoutInMillis);
-    }
-
-    public boolean touch(K key, int expirationInSecs, long writeTimeoutInMillis, long responseTimeoutInMillis) {
-        return cache.touch(key, expirationInSecs, writeTimeoutInMillis, responseTimeoutInMillis);
-    }
-
-    public boolean quit(SocketAddress address, boolean noReply) {
-        return cache.quit(address, noReply);
-    }
-
-    public boolean add(K key, V value, int expirationInSecs, boolean noReply, long writeTimeoutInMillis, long responseTimeoutInMillis) {
-        return cache.add(key, value, expirationInSecs, noReply, writeTimeoutInMillis, responseTimeoutInMillis);
-    }
-
-    public boolean verbosity(SocketAddress address, int verbosity, long writeTimeoutInMillis, long responseTimeoutInMillis) {
-        return cache.verbosity(address, verbosity, writeTimeoutInMillis, responseTimeoutInMillis);
-    }
-
-    public long incr(K key, long delta, long initial, int expirationInSecs, boolean noReply) {
-        return cache.incr(key, delta, initial, expirationInSecs, noReply);
-    }
-
-    public boolean replace(K key, V value, int expirationInSecs, boolean noReply, long writeTimeoutInMillis, long responseTimeoutInMillis) {
-        return cache.replace(key, value, expirationInSecs, noReply, writeTimeoutInMillis, responseTimeoutInMillis);
-    }
-
-    public boolean append(K key, V value, boolean noReply, long writeTimeoutInMillis, long responseTimeoutInMillis) {
-        return cache.append(key, value, noReply, writeTimeoutInMillis, responseTimeoutInMillis);
-    }
-
-    public V gat(K key, int expirationInSecs, boolean noReplys) {
-        return cache.gat(key, expirationInSecs, noReplys);
-    }
-
-    public boolean append(K key, V value, boolean noReply) {
-        return cache.append(key, value, noReply);
-    }
-
-    public Map<K, Boolean> casMulti(Map<K, ValueWithCas<V>> map, int expirationInSecs) {
-        return cache.casMulti(map, expirationInSecs);
-    }
-
-    public V get(K key, boolean noReply) {
-        return cache.get(key, noReply);
-    }
-
-    public boolean delete(K key, boolean noReply, long writeTimeoutInMillis, long responseTimeoutInMillis) {
-        return cache.delete(key, noReply, writeTimeoutInMillis, responseTimeoutInMillis);
-    }
-
-    public boolean verbosity(SocketAddress address, int verbosity) {
-        return cache.verbosity(address, verbosity);
-    }
-
-    public boolean quit(SocketAddress address, boolean noReply, long writeTimeoutInMillis, long responseTimeoutInMillis) {
-        return cache.quit(address, noReply, writeTimeoutInMillis, responseTimeoutInMillis);
-    }
-
-    public void removeServer(SocketAddress serverAddress) {
-        cache.removeServer(serverAddress);
-    }
-
-    public boolean addServer(SocketAddress serverAddress) {
-        return cache.addServer(serverAddress);
-    }
-
-    public boolean replace(K key, V value, int expirationInSecs, boolean noReply) {
-        return cache.replace(key, value, expirationInSecs, noReply);
-    }
-
-    public Map<K, Boolean> setMulti(Map<K, V> map, int expirationInSecs) {
-        return cache.setMulti(map, expirationInSecs);
-    }
-
-    public String saslAuth(SocketAddress address, String mechanism, byte[] data) {
-        return cache.saslAuth(address, mechanism, data);
-    }
-
-    public String version(SocketAddress address, long writeTimeoutInMillis, long responseTimeoutInMillis) {
-        return cache.version(address, writeTimeoutInMillis, responseTimeoutInMillis);
-    }
-
-    public boolean isInServerList(SocketAddress serverAddress) {
-        return cache.isInServerList(serverAddress);
-    }
-
-    public boolean add(K key, V value, int expirationInSecs, boolean noReply) {
-        return cache.add(key, value, expirationInSecs, noReply);
-    }
-
-    public ValueWithKey<K, V> getKey(K key, boolean noReply) {
-        return cache.getKey(key, noReply);
-    }
-
-    public Map<K, Boolean> deleteMulti(Set<K> keys, long writeTimeoutInMillis, long responseTimeoutInMillis) {
-        return cache.deleteMulti(keys, writeTimeoutInMillis, responseTimeoutInMillis);
-    }
-
-    public Map<K, Boolean> deleteMulti(Set<K> keys) {
-        return cache.deleteMulti(keys);
-    }
-
-    public boolean prepend(K key, V value, boolean noReply, long writeTimeoutInMillis, long responseTimeoutInMillis) {
-        return cache.prepend(key, value, noReply, writeTimeoutInMillis, responseTimeoutInMillis);
-    }
-
-    public Map<String, String> statsItems(SocketAddress address, String item) {
-        return cache.statsItems(address, item);
-    }
-
-    public ValueWithKey<K, V> getKey(K key, boolean noReply, long writeTimeoutInMillis, long responseTimeoutInMillis) {
-        return cache.getKey(key, noReply, writeTimeoutInMillis, responseTimeoutInMillis);
-    }
-
-    public Map<K, V> getMulti(Set<K> keys, long writeTimeoutInMillis, long responseTimeoutInMillis) {
-        return cache.getMulti(keys, writeTimeoutInMillis, responseTimeoutInMillis);
-    }
-
-    public boolean cas(K key, V value, int expirationInSecs, long cas, boolean noReply, long writeTimeoutInMillis, long responseTimeoutInMillis) {
-        return cache.cas(key, value, expirationInSecs, cas, noReply, writeTimeoutInMillis, responseTimeoutInMillis);
-    }
-
-    public V gat(K key, int expirationInSecs, boolean noReply, long writeTimeoutInMillis, long responseTimeoutInMillis) {
-        return cache.gat(key, expirationInSecs, noReply, writeTimeoutInMillis, responseTimeoutInMillis);
-    }
-
-    public Map<String, String> stats(SocketAddress address) {
-        return cache.stats(address);
-    }
-
-    public Map<K, Boolean> casMulti(Map<K, ValueWithCas<V>> map, int expirationInSecs, long writeTimeoutInMillis, long responseTimeoutInMillis) {
-        return cache.casMulti(map, expirationInSecs, writeTimeoutInMillis, responseTimeoutInMillis);
-    }
-
-    public boolean prepend(K key, V value, boolean noReply) {
-        return cache.prepend(key, value, noReply);
-    }
-
-    public boolean flushAll(SocketAddress address, int expirationInSecs, boolean noReply) {
-        return cache.flushAll(address, expirationInSecs, noReply);
-    }
-
-    public String saslStep(SocketAddress address, String mechanism, byte[] data) {
-        return cache.saslStep(address, mechanism, data);
-    }
-
-    public long decr(K key, long delta, long initial, int expirationInSecs, boolean noReply) {
-        return cache.decr(key, delta, initial, expirationInSecs, noReply);
-    }
-
-    public boolean set(K key, V value, int expirationInSecs, boolean noReply) {
-        return cache.set(key, value, expirationInSecs, noReply);
-    }
-
-    public ValueWithCas<V> gets(K key, boolean noReply) {
-        return cache.gets(key, noReply);
-    }
-
-    public List<SocketAddress> getCurrentServerList() {
-        return cache.getCurrentServerList();
-    }
-
-    public boolean cas(K key, V value, int expirationInSecs, long cas, boolean noReplys) {
-        return cache.cas(key, value, expirationInSecs, cas, noReplys);
-    }
-
-    public ValueWithCas<V> gets(K key, boolean noReply, long writeTimeoutInMillis, long responseTimeoutInMillis) {
-        return cache.gets(key, noReply, writeTimeoutInMillis, responseTimeoutInMillis);
-    }
-
-    public String getName() {
-        return cache.getName();
-    }
-
-    public String saslAuth(SocketAddress address, String mechanism, byte[] data, long writeTimeoutInMillis, long responseTimeoutInMillis) {
-        return cache.saslAuth(address, mechanism, data, writeTimeoutInMillis, responseTimeoutInMillis);
-    }
-
-    public Map<K, ValueWithCas<V>> getsMulti(Set<K> keys) {
-        return cache.getsMulti(keys);
-    }
-
-    public boolean delete(K key, boolean noReply) {
-        return cache.delete(key, noReply);
-    }
-
-    public boolean flushAll(SocketAddress address, int expirationInSecs, boolean noReply, long writeTimeoutInMillis, long responseTimeoutInMillis) {
-        return cache.flushAll(address, expirationInSecs, noReply, writeTimeoutInMillis, responseTimeoutInMillis);
-    }
-
-    public boolean noop(SocketAddress addresss) {
-        return cache.noop(addresss);
-    }
-
-    public Map<K, ValueWithCas<V>> getsMulti(Set<K> keys, long writeTimeoutInMillis, long responseTimeoutInMillis) {
-        return cache.getsMulti(keys, writeTimeoutInMillis, responseTimeoutInMillis);
-    }
-
-    public Map<String, String> stats(SocketAddress address, long writeTimeoutInMillis, long responseTimeoutInMillis) {
-        return cache.stats(address, writeTimeoutInMillis, responseTimeoutInMillis);
-    }
-
-    public String saslStep(SocketAddress address, String mechanism, byte[] data, long writeTimeoutInMillis, long responseTimeoutInMillis) {
-        return cache.saslStep(address, mechanism, data, writeTimeoutInMillis, responseTimeoutInMillis);
-    }
-
-    public Map<K, Boolean> setMulti(Map<K, V> map, int expirationInSecs, long writeTimeoutInMillis, long responseTimeoutInMillis) {
-        return cache.setMulti(map, expirationInSecs, writeTimeoutInMillis, responseTimeoutInMillis);
-    }
-
-    public String saslList(SocketAddress address) {
-        return cache.saslList(address);
-    }
-
-    public long incr(K key, long delta, long initial, int expirationInSecs, boolean noReply, long writeTimeoutInMillis, long responseTimeoutInMillis) {
-        return cache.incr(key, delta, initial, expirationInSecs, noReply, writeTimeoutInMillis, responseTimeoutInMillis);
-    }
-
-    public V get(K key, boolean noReply, long writeTimeoutInMillis, long responseTimeoutInMillis) {
-        return cache.get(key, noReply, writeTimeoutInMillis, responseTimeoutInMillis);
-    }
-
-    public String saslList(SocketAddress address, long writeTimeoutInMillis, long responseTimeoutInMillis) {
-        return cache.saslList(address, writeTimeoutInMillis, responseTimeoutInMillis);
     }
 
     public static class MemcachedCache {

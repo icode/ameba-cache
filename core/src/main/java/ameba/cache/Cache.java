@@ -1,6 +1,9 @@
 package ameba.cache;
 
+import ameba.cache.util.Serializations;
 import ameba.container.Container;
+import ameba.db.DataSourceManager;
+import ameba.db.model.ModelManager;
 import ameba.event.Listener;
 import ameba.event.SystemEventBus;
 import ameba.util.ClassUtils;
@@ -8,9 +11,8 @@ import ameba.util.Times;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.ws.rs.core.FeatureContext;
-import java.io.NotSerializableException;
-import java.io.Serializable;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * 缓存
@@ -36,8 +38,7 @@ public class Cache {
      * @param expiration Ex: 10s, 3mn, 8h
      */
     public static void add(String key, Object value, String expiration) {
-        checkSerializable(value);
-        cacheEngine.add(key, value, Times.parseDuration(expiration));
+        add(key, value, Times.parseDuration(expiration));
     }
 
     /**
@@ -50,8 +51,7 @@ public class Cache {
      * @return If the element an eventually been cached
      */
     public static boolean syncAdd(String key, Object value, String expiration) {
-        checkSerializable(value);
-        return cacheEngine.syncAdd(key, value, Times.parseDuration(expiration));
+        return syncAdd(key, value, Times.parseDuration(expiration));
     }
 
     /**
@@ -61,8 +61,7 @@ public class Cache {
      * @param value Element value
      */
     public static void add(String key, Object value) {
-        checkSerializable(value);
-        cacheEngine.add(key, value, 0);
+        add(key, value, 0);
     }
 
     /**
@@ -73,8 +72,7 @@ public class Cache {
      * @param expiration Ex: 10s, 3mn, 8h, 2d 5h 30min
      */
     public static void set(String key, Object value, String expiration) {
-        checkSerializable(value);
-        cacheEngine.set(key, value, Times.parseDuration(expiration));
+        set(key, value, Times.parseDuration(expiration));
     }
 
     /**
@@ -86,8 +84,7 @@ public class Cache {
      * @return If the element an eventually been cached
      */
     public static boolean syncSet(String key, Object value, String expiration) {
-        checkSerializable(value);
-        return cacheEngine.syncSet(key, value, Times.parseDuration(expiration));
+        return syncSet(key, value, Times.parseDuration(expiration));
     }
 
     /**
@@ -97,8 +94,7 @@ public class Cache {
      * @param value Element value
      */
     public static void set(String key, Object value) {
-        checkSerializable(value);
-        cacheEngine.set(key, value, 0);
+        set(key, value, 0);
     }
 
     /**
@@ -109,8 +105,7 @@ public class Cache {
      * @param expiration Ex: 10s, 3mn, 8h, 2d 5h 30min
      */
     public static void replace(String key, Object value, String expiration) {
-        checkSerializable(value);
-        cacheEngine.replace(key, value, Times.parseDuration(expiration));
+        replace(key, value, Times.parseDuration(expiration));
     }
 
     /**
@@ -123,8 +118,7 @@ public class Cache {
      * @return If the element an eventually been cached
      */
     public static boolean syncReplace(String key, Object value, String expiration) {
-        checkSerializable(value);
-        return cacheEngine.syncReplace(key, value, Times.parseDuration(expiration));
+        return syncReplace(key, value, Times.parseDuration(expiration));
     }
 
     /**
@@ -134,8 +128,7 @@ public class Cache {
      * @param value Element value
      */
     public static void replace(String key, Object value) {
-        checkSerializable(value);
-        cacheEngine.replace(key, value, 0);
+        replace(key, value, 0);
     }
 
     /**
@@ -206,29 +199,37 @@ public class Cache {
         syncIncr(key, 1, 1, expirationInSecs);
     }
 
-
     public static void add(String key, Object value, int expiration) {
-        checkSerializable(value);
-        cacheEngine.add(key, value, expiration);
+        cacheEngine.add(key, Serializations.toBytes(value), expiration);
     }
 
     public static boolean syncAdd(String key, Object value, int expiration) {
-        checkSerializable(value);
-        return cacheEngine.syncAdd(key, value, expiration);
+        return cacheEngine.syncAdd(key, Serializations.toBytes(value), expiration);
+    }
+
+
+    public static boolean syncAdd(String key, Object value) {
+        return syncAdd(key, value, 0);
     }
 
     public static boolean syncSet(String key, Object value, int expiration) {
-        checkSerializable(value);
-        return cacheEngine.syncSet(key, value, expiration);
+        return cacheEngine.syncSet(key, Serializations.toBytes(value), expiration);
+    }
+
+    public static boolean syncSet(String key, Object value) {
+        return syncSet(key, value, 0);
     }
 
     public static <V> V gat(String key, int expiration) {
-        return cacheEngine.gat(key, expiration);
+        return Serializations.toObject(cacheEngine.gat(key, expiration));
     }
 
     public static boolean syncReplace(String key, Object value, int expiration) {
-        checkSerializable(value);
-        return cacheEngine.syncReplace(key, value, expiration);
+        return cacheEngine.syncReplace(key, Serializations.toBytes(value), expiration);
+    }
+
+    public static boolean syncReplace(String key, Object value) {
+        return syncReplace(key, value, 0);
     }
 
     public static boolean touch(String key, int expiration) {
@@ -236,13 +237,11 @@ public class Cache {
     }
 
     public static void replace(String key, Object value, int expiration) {
-        checkSerializable(value);
-        cacheEngine.replace(key, value, expiration);
+        cacheEngine.replace(key, Serializations.toBytes(value), expiration);
     }
 
     public static void set(String key, Object value, int expiration) {
-        checkSerializable(value);
-        cacheEngine.set(key, value, expiration);
+        cacheEngine.set(key, Serializations.toBytes(value), expiration);
     }
 
     /**
@@ -320,7 +319,11 @@ public class Cache {
      * @return Map of keys & values
      */
     public static Map<String, Object> get(String... key) {
-        return cacheEngine.get(key);
+        Map<String, Object> result = cacheEngine.get(key);
+        for (Map.Entry<String, Object> entry : result.entrySet()) {
+            entry.setValue(Serializations.toObject(entry.getValue()));
+        }
+        return result;
     }
 
     /**
@@ -359,7 +362,7 @@ public class Cache {
      */
     @SuppressWarnings("unchecked")
     public static <T> T get(String key) {
-        return (T) cacheEngine.get(key);
+        return Serializations.toObject(cacheEngine.get(key));
     }
 
     /**
@@ -369,13 +372,24 @@ public class Cache {
         cacheEngine.shutdown();
     }
 
-    /**
-     * Utility that check that an object is serializable.
-     */
-    static void checkSerializable(Object value) {
-        if (value != null && !(value instanceof Serializable)) {
-            throw new CacheException("Cannot cache a non-serializable value of type " + value.getClass().getName(), new NotSerializableException(value.getClass().getName()));
+
+    public static Map<String, Boolean> syncDelete(String... keys) {
+        return cacheEngine.syncDelete(keys);
+    }
+
+    public static Map<String, Boolean> syncSet(Map<String, Object> map, int expirationInSecs) {
+        for (Map.Entry<String, Object> entry : map.entrySet()) {
+            entry.setValue(Serializations.toBytes(entry.getValue()));
         }
+        return cacheEngine.syncSet(map, expirationInSecs);
+    }
+
+    public static Map<String, Boolean> syncSet(Map<String, Object> map, String expirationInSecs) {
+        return syncSet(map, Times.parseDuration(expirationInSecs));
+    }
+
+    public static Map<String, Boolean> syncSet(Map<String, Object> map) {
+        return syncSet(map, 0);
     }
 
     public static <K, V> CacheEngine<K, V> createEngine(String name) {
@@ -401,6 +415,12 @@ public class Cache {
                         cacheEngine.shutdown();
                     }
                 });
+
+                for (String name : DataSourceManager.getDataSourceNames()) {
+                    Set<Class> classSet = ModelManager.getModels(name);
+                    if (classSet != null)
+                        Serializations.registerClass(classSet.toArray(new Class[classSet.size()]));
+                }
 
                 return true;
             } else

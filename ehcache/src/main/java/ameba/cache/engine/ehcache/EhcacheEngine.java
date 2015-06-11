@@ -9,6 +9,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import javax.ws.rs.core.FeatureContext;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.Map;
 
 /**
@@ -44,12 +45,12 @@ public class EhcacheEngine<K, V> extends CacheEngine<K, V> {
 
     @Override
     public void add(K key, V value, int expiration) {
-        cache.putIfAbsent(createElement(key, value, expiration));
+        syncAdd(key, value, expiration);
     }
 
     @Override
     public boolean syncAdd(K key, V value, int expiration) {
-        return get(key) == null && syncSet(key, value, expiration);
+        return cache.putIfAbsent(createElement(key, value, expiration)) == null;
     }
 
     @Override
@@ -57,13 +58,17 @@ public class EhcacheEngine<K, V> extends CacheEngine<K, V> {
         cache.put(createElement(key, value, expiration));
     }
 
-    private Element createElement(K key, Object value, int expiration) {
+    private Element createElement(K key, V value, int expiration) {
         Element element = new Element(key, value);
+        configureElement(element, expiration);
+        return element;
+    }
+
+    private void configureElement(Element element, int expiration) {
         if (expiration > 0) {
             element.setTimeToLive(0);
             element.setTimeToIdle(expiration);
         }
-        return element;
     }
 
     @Override
@@ -91,7 +96,10 @@ public class EhcacheEngine<K, V> extends CacheEngine<K, V> {
     @SuppressWarnings("unchecked")
     public <O> O get(K key) {
         Element e = cache.getQuiet(key);
-        return (e == null) ? null : (O) e.getObjectValue();
+        if (e != null) {
+            return (O) e.getObjectValue();
+        }
+        return null;
     }
 
     @Override
@@ -114,10 +122,12 @@ public class EhcacheEngine<K, V> extends CacheEngine<K, V> {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public Map<K, V> get(K... keys) {
-        Map<K, V> result = Maps.newHashMap();
-        for (K key : keys) {
-            result.put(key, this.<V>get(key));
+        Map<Object, Element> map = cache.getAll(Arrays.asList(keys));
+        Map<K, V> result = Maps.newLinkedHashMap();
+        for (Map.Entry entry : map.entrySet()) {
+            result.put((K) entry.getKey(), (V) entry.getValue());
         }
         return result;
     }
@@ -144,7 +154,9 @@ public class EhcacheEngine<K, V> extends CacheEngine<K, V> {
 
     private boolean _syncSet(K key, long value, int expiration) {
         try {
-            cache.put(createElement(key, value, expiration));
+            Element element = new Element(key, value);
+            configureElement(element, expiration);
+            cache.put(element);
         } catch (Exception e) {
             return false;
         }
@@ -173,11 +185,29 @@ public class EhcacheEngine<K, V> extends CacheEngine<K, V> {
 
     @Override
     public boolean syncDelete(K key) {
-        try {
-            return cache.remove(key);
-        } catch (Exception e) {
-            return false;
+        return cache.remove(key);
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public Map<K, Boolean> syncDelete(K... keys) {
+        Map<K, Boolean> result = Maps.newLinkedHashMap();
+        cache.removeAll(Arrays.asList(keys));
+        for (K key : keys) {
+            result.put(key, true);
         }
+
+        return result;
+    }
+
+    @Override
+    public Map<K, Boolean> syncSet(Map<K, V> map, int expirationInSecs) {
+        Map<K, Boolean> result = Maps.newLinkedHashMap();
+        for (Map.Entry<K, V> entry : map.entrySet()) {
+            result.put(entry.getKey(), syncSet(entry.getKey(), entry.getValue(), expirationInSecs));
+        }
+
+        return result;
     }
 
     @Override

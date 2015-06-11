@@ -44,10 +44,7 @@ public class EhcacheEngine<K, V> extends CacheEngine<K, V> {
 
     @Override
     public void add(K key, V value, int expiration) {
-        if (get(key) != null) {
-            return;
-        }
-        set(key, value, expiration);
+        cache.putIfAbsent(createElement(key, value, expiration));
     }
 
     @Override
@@ -57,10 +54,16 @@ public class EhcacheEngine<K, V> extends CacheEngine<K, V> {
 
     @Override
     public void set(K key, V value, int expiration) {
+        cache.put(createElement(key, value, expiration));
+    }
+
+    private Element createElement(K key, Object value, int expiration) {
         Element element = new Element(key, value);
-        if (expiration > 0)
+        if (expiration > 0) {
+            element.setTimeToLive(0);
             element.setTimeToIdle(expiration);
-        cache.put(element);
+        }
+        return element;
     }
 
     @Override
@@ -97,8 +100,10 @@ public class EhcacheEngine<K, V> extends CacheEngine<K, V> {
         // get method auto update AccessStatistics
         Element e = cache.get(key);
         if (e == null) return null;
-        if (expiration > 0)
+        if (expiration > 0) {
             e.setTimeToIdle(expiration);
+            cache.flush();
+        }
         return (O) e.getObjectValue();
     }
 
@@ -139,10 +144,7 @@ public class EhcacheEngine<K, V> extends CacheEngine<K, V> {
 
     private boolean _syncSet(K key, long value, int expiration) {
         try {
-            Element newE = new Element(key, value);
-            if (expiration > 0)
-                newE.setTimeToIdle(expiration);
-            cache.put(newE);
+            cache.put(createElement(key, value, expiration));
         } catch (Exception e) {
             return false;
         }

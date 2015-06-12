@@ -2,7 +2,6 @@ package ameba.cache;
 
 import ameba.cache.util.Serializations;
 import ameba.container.Container;
-import ameba.core.Application;
 import ameba.db.DataSourceManager;
 import ameba.db.model.ModelManager;
 import ameba.event.Listener;
@@ -11,7 +10,6 @@ import ameba.util.ClassUtils;
 import ameba.util.Times;
 import org.apache.commons.lang3.StringUtils;
 
-import javax.inject.Inject;
 import javax.ws.rs.core.FeatureContext;
 import java.util.Map;
 import java.util.Set;
@@ -418,12 +416,14 @@ public class Cache {
                     }
                 });
 
-                Serializations.reinit();
+                Serializations.destroy();
 
                 for (String name : DataSourceManager.getDataSourceNames()) {
                     Set<Class> classSet = ModelManager.getModels(name);
                     if (classSet != null)
-                        Serializations.registerClass(classSet.toArray(new Class[classSet.size()]));
+                        for (Class clazz : classSet) {
+                            Serializations.registerClass(clazz);
+                        }
                 }
 
                 return true;

@@ -4,7 +4,6 @@ import ameba.util.IOUtils;
 import com.avaje.ebean.SqlRow;
 import com.avaje.ebean.bean.BeanCollection;
 import com.esotericsoftware.kryo.*;
-import com.esotericsoftware.kryo.factories.ReflectionSerializerFactory;
 import com.esotericsoftware.kryo.factories.SerializerFactory;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
@@ -136,9 +135,18 @@ public class KryoSerializer implements Serializer {
             register(LocalDateTime.class, new JodaLocalDateTimeSerializer());
             // guava ImmutableList
             ImmutableListSerializer.registerSerializers(this);
-            SerializerFactory fieldSerializerFactory = new ReflectionSerializerFactory(FieldSerializer.class);
-            addDefaultSerializer(BeanCollection.class, fieldSerializerFactory);
-            addDefaultSerializer(SqlRow.class, fieldSerializerFactory);
+            addDefaultSerializer(BeanCollection.class, new SerializerFactory() {
+                @Override
+                public com.esotericsoftware.kryo.Serializer makeSerializer(Kryo kryo, Class<?> type) {
+                    return new FieldSerializer<>(KryoExtends.this, BeanCollection.class);
+                }
+            });
+            addDefaultSerializer(SqlRow.class, new SerializerFactory() {
+                @Override
+                public com.esotericsoftware.kryo.Serializer makeSerializer(Kryo kryo, Class<?> type) {
+                    return new FieldSerializer<>(KryoExtends.this, SqlRow.class);
+                }
+            });
         }
 
         public KryoExtends() {

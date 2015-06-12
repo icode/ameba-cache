@@ -11,8 +11,13 @@ import com.esotericsoftware.kryo.pool.KryoCallback;
 import com.esotericsoftware.kryo.pool.KryoFactory;
 import com.esotericsoftware.kryo.pool.KryoPool;
 import com.esotericsoftware.kryo.serializers.FieldSerializer;
+import com.esotericsoftware.kryo.util.DefaultClassResolver;
+import com.esotericsoftware.kryo.util.FastestStreamFactory;
+import com.esotericsoftware.kryo.util.MapReferenceResolver;
 import com.esotericsoftware.minlog.Log;
-import com.google.common.collect.Lists;
+import com.google.common.base.Charsets;
+import com.google.common.collect.Maps;
+import com.google.common.hash.Hashing;
 import de.javakaffee.kryoserializers.*;
 import de.javakaffee.kryoserializers.guava.ImmutableListSerializer;
 import de.javakaffee.kryoserializers.jodatime.JodaDateTimeSerializer;
@@ -29,7 +34,7 @@ import java.io.ByteArrayOutputStream;
 import java.lang.reflect.InvocationHandler;
 import java.util.Arrays;
 import java.util.GregorianCalendar;
-import java.util.List;
+import java.util.Map;
 
 import static com.esotericsoftware.minlog.Log.DEBUG;
 import static com.esotericsoftware.minlog.Log.debug;
@@ -39,12 +44,12 @@ import static com.esotericsoftware.minlog.Log.debug;
  */
 public class KryoSerializer implements Serializer {
     private static final Logger logger = LoggerFactory.getLogger(Serializations.class);
-    private static final List<Class> registerClass = Lists.newArrayList();
+    private static final Map<Integer, Class> registerClass = Maps.newHashMap();
     private static final KryoFactory factory = new KryoFactory() {
         public Kryo create() {
             Kryo kryo = new KryoExtends();
-            for (Class clazz : registerClass) {
-                kryo.register(clazz, -1);
+            for (Map.Entry<Integer, Class> entry : registerClass.entrySet()) {
+                kryo.register(entry.getClass(), entry.getKey());
             }
             return kryo;
         }
@@ -55,8 +60,12 @@ public class KryoSerializer implements Serializer {
         Log.setLogger(new Slf4jLogger());
     }
 
+    private static int getId(Class clazz) {
+        return Hashing.sha256().hashString(clazz.getName(), Charsets.UTF_8).asInt();
+    }
+
     public void registerClass(Class clazz) {
-        registerClass.add(clazz);
+        registerClass.put(getId(clazz), clazz);
     }
 
     public byte[] asBytes(final Object object) {
@@ -151,7 +160,7 @@ public class KryoSerializer implements Serializer {
         }
 
         public KryoExtends() {
-            super();
+            super(new DefaultClassResolver(), new MapReferenceResolver(), new FastestStreamFactory());
         }
 
         public KryoExtends(ReferenceResolver referenceResolver) {
@@ -182,9 +191,8 @@ public class KryoSerializer implements Serializer {
                 registration.setSerializer(serializer);
                 return registration;
             }
-            return getClassResolver().register(new Registration(type, serializer, -1));
+            return getClassResolver().register(new Registration(type, serializer, getId(type)));
         }
-
 
         public Registration register(Registration registration) {
             Registration existing = getRegistration(registration.getId());

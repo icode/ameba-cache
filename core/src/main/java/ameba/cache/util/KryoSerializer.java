@@ -72,6 +72,7 @@ public class KryoSerializer implements Serializer {
                 } finally {
                     IOUtils.closeQuietly(output);
                     IOUtils.closeQuietly(out);
+                    kryo.reset();
                 }
             }
         });
@@ -87,6 +88,7 @@ public class KryoSerializer implements Serializer {
                     return (O) kryo.readClassAndObject(input);
                 } finally {
                     IOUtils.closeQuietly(input);
+                    kryo.reset();
                 }
             }
         });
@@ -118,6 +120,7 @@ public class KryoSerializer implements Serializer {
     public static class KryoExtends extends Kryo {
         {
             setAsmEnabled(true);
+            setAutoReset(false);
             setInstantiatorStrategy(new DefaultInstantiatorStrategy(new StdInstantiatorStrategy()));
             register(Arrays.asList("").getClass(), new ArraysAsListSerializer());
             register(GregorianCalendar.class, new GregorianCalendarSerializer());
@@ -135,18 +138,16 @@ public class KryoSerializer implements Serializer {
             register(LocalDateTime.class, new JodaLocalDateTimeSerializer());
             // guava ImmutableList
             ImmutableListSerializer.registerSerializers(this);
-            addDefaultSerializer(BeanCollection.class, new SerializerFactory() {
+            SerializerFactory fieldSerializerFactory = new SerializerFactory() {
                 @Override
                 public com.esotericsoftware.kryo.Serializer makeSerializer(Kryo kryo, Class<?> type) {
-                    return new FieldSerializer<>(KryoExtends.this, BeanCollection.class);
+                    return new FieldSerializer<>(kryo, BeanCollection.class.isAssignableFrom(type)
+                            ? BeanCollection.class : SqlRow.class);
                 }
-            });
-            addDefaultSerializer(SqlRow.class, new SerializerFactory() {
-                @Override
-                public com.esotericsoftware.kryo.Serializer makeSerializer(Kryo kryo, Class<?> type) {
-                    return new FieldSerializer<>(KryoExtends.this, SqlRow.class);
-                }
-            });
+            };
+
+            addDefaultSerializer(BeanCollection.class, fieldSerializerFactory);
+            addDefaultSerializer(SqlRow.class, fieldSerializerFactory);
         }
 
         public KryoExtends() {

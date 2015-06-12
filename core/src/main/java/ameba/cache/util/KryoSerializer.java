@@ -10,15 +10,12 @@ import com.esotericsoftware.kryo.io.Output;
 import com.esotericsoftware.kryo.pool.KryoCallback;
 import com.esotericsoftware.kryo.pool.KryoFactory;
 import com.esotericsoftware.kryo.pool.KryoPool;
-import com.esotericsoftware.kryo.serializers.DefaultSerializers;
 import com.esotericsoftware.kryo.serializers.FieldSerializer;
 import com.esotericsoftware.kryo.util.DefaultClassResolver;
 import com.esotericsoftware.kryo.util.FastestStreamFactory;
 import com.esotericsoftware.kryo.util.MapReferenceResolver;
 import com.esotericsoftware.minlog.Log;
-import com.google.common.base.Charsets;
-import com.google.common.collect.Maps;
-import com.google.common.hash.Hashing;
+import com.google.common.collect.Lists;
 import de.javakaffee.kryoserializers.*;
 import de.javakaffee.kryoserializers.guava.ImmutableListSerializer;
 import de.javakaffee.kryoserializers.jodatime.JodaDateTimeSerializer;
@@ -33,11 +30,9 @@ import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayOutputStream;
 import java.lang.reflect.InvocationHandler;
-import java.sql.Timestamp;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.GregorianCalendar;
-import java.util.Map;
+import java.util.List;
 
 import static com.esotericsoftware.minlog.Log.DEBUG;
 import static com.esotericsoftware.minlog.Log.debug;
@@ -47,12 +42,12 @@ import static com.esotericsoftware.minlog.Log.debug;
  */
 public class KryoSerializer implements Serializer {
     private static final Logger logger = LoggerFactory.getLogger(Serializations.class);
-    private static final Map<Class, Integer> registerClass = Maps.newHashMap();
+    private static final List<Class> registerClass = Lists.newArrayList();
     private static final KryoFactory factory = new KryoFactory() {
         public Kryo create() {
             Kryo kryo = new KryoExtends();
-            for (Map.Entry<Class, Integer> entry : registerClass.entrySet()) {
-                kryo.register(entry.getKey(), entry.getValue());
+            for (Class clazz : registerClass) {
+                kryo.register(clazz, -1);
             }
             return kryo;
         }
@@ -63,12 +58,8 @@ public class KryoSerializer implements Serializer {
         Log.setLogger(new Slf4jLogger());
     }
 
-    private static int getId(Class clazz) {
-        return Hashing.sha256().hashString(clazz.getName(), Charsets.UTF_8).asInt();
-    }
-
     public void registerClass(Class clazz) {
-        registerClass.put(clazz, getId(clazz));
+        registerClass.add(clazz);
     }
 
     public byte[] asBytes(final Object object) {
@@ -77,14 +68,6 @@ public class KryoSerializer implements Serializer {
             public byte[] execute(Kryo kryo) {
                 ByteArrayOutputStream out = new ByteArrayOutputStream();
                 Output output = new Output(out, 1024);
-                if (object != null) {
-                    Class clazz = object.getClass();
-                    if (!registerClass.containsKey(clazz)) {
-                        int id = getId(clazz);
-                        registerClass.put(clazz, id);
-                        kryo.register(clazz, id);
-                    }
-                }
                 kryo.writeClassAndObject(output, object);
                 output.flush();
                 try {
@@ -141,18 +124,6 @@ public class KryoSerializer implements Serializer {
         {
             setAsmEnabled(true);
             setAutoReset(false);
-            register(Timestamp.class, new DefaultSerializers.DateSerializer());
-            register(Date.class, new DefaultSerializers.DateSerializer());
-            register(java.sql.Date.class, new DefaultSerializers.DateSerializer());
-            register(Object.class);
-            register(Integer.class, new DefaultSerializers.IntSerializer());
-            register(String.class, new DefaultSerializers.StringSerializer());
-            register(Float.class, new DefaultSerializers.FloatSerializer());
-            register(Boolean.class, new DefaultSerializers.BooleanSerializer());
-            register(Byte.class, new DefaultSerializers.ByteSerializer());
-            register(Short.class, new DefaultSerializers.ShortSerializer());
-            register(Long.class, new DefaultSerializers.LongSerializer());
-            register(Double.class, new DefaultSerializers.DoubleSerializer());
 
             setInstantiatorStrategy(new DefaultInstantiatorStrategy(new StdInstantiatorStrategy()));
             register(Arrays.asList("").getClass(), new ArraysAsListSerializer());
@@ -215,7 +186,7 @@ public class KryoSerializer implements Serializer {
                 registration.setSerializer(serializer);
                 return registration;
             }
-            return getClassResolver().register(new Registration(type, serializer, getId(type)));
+            return getClassResolver().register(new Registration(type, serializer, -1));
         }
 
         public Registration register(Registration registration) {

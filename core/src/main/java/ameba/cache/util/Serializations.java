@@ -16,7 +16,7 @@ public class Serializations {
 
     public static Serializer getSerializer() {
         if (serializer == null)
-            serializer = new KryoSerializer();
+            serializer = new FSTSerializer();
         return serializer;
     }
 

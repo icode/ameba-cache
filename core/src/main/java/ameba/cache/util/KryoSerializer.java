@@ -42,8 +42,13 @@ import static com.esotericsoftware.minlog.Log.debug;
  */
 public class KryoSerializer implements Serializer {
     private static final Logger logger = LoggerFactory.getLogger(Serializations.class);
-    private static final List<Class> registerClass = Lists.newArrayList();
-    private static final KryoFactory factory = new KryoFactory() {
+
+    static {
+        Log.setLogger(new Slf4jLogger());
+    }
+
+    private final List<Class> registerClass = Lists.newArrayList();
+    private final KryoFactory factory = new KryoFactory() {
         public Kryo create() {
             Kryo kryo = new KryoExtends();
             for (Class clazz : registerClass) {
@@ -52,11 +57,7 @@ public class KryoSerializer implements Serializer {
             return kryo;
         }
     };
-    private static final KryoPool pool = new KryoPool.Builder(factory).softReferences().build();
-
-    static {
-        Log.setLogger(new Slf4jLogger());
-    }
+    private final KryoPool pool = new KryoPool.Builder(factory).softReferences().build();
 
     public void registerClass(Class clazz) {
         registerClass.add(clazz);

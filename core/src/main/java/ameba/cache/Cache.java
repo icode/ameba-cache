@@ -9,6 +9,8 @@ import ameba.event.SystemEventBus;
 import ameba.util.ClassUtils;
 import ameba.util.Times;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.FeatureContext;
 import java.util.Map;
@@ -21,6 +23,7 @@ import java.util.Set;
  */
 public class Cache {
 
+    private static final Logger logger = LoggerFactory.getLogger(Cache.class);
     /**
      * 缓存引擎
      */
@@ -207,7 +210,6 @@ public class Cache {
         return cacheEngine.syncAdd(key, Serializations.asBytes(value), expiration);
     }
 
-
     public static boolean syncAdd(String key, Object value) {
         return syncAdd(key, value, 0);
     }
@@ -372,7 +374,6 @@ public class Cache {
         cacheEngine.shutdown();
     }
 
-
     public static Map<String, Boolean> syncDelete(String... keys) {
         return cacheEngine.syncDelete(keys);
     }
@@ -410,9 +411,14 @@ public class Cache {
                         .register(CacheResponseFilter.class);
 
                 SystemEventBus.subscribe(Container.ShutdownEvent.class, new Listener<Container.ShutdownEvent>() {
+
                     @Override
                     public void onReceive(Container.ShutdownEvent event) {
-                        cacheEngine.shutdown();
+                        try {
+                            cacheEngine.shutdown();
+                        } catch (Exception e) {
+                            logger.error("Cache Engine shutdown error", e);
+                        }
                     }
                 });
 

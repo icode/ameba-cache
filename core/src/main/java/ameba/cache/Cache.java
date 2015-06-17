@@ -2,8 +2,6 @@ package ameba.cache;
 
 import ameba.cache.util.Serializations;
 import ameba.container.Container;
-import ameba.db.DataSourceManager;
-import ameba.db.model.ModelManager;
 import ameba.event.Listener;
 import ameba.event.SystemEventBus;
 import ameba.util.ClassUtils;
@@ -14,7 +12,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.FeatureContext;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * 缓存
@@ -414,6 +411,7 @@ public class Cache {
 
                     @Override
                     public void onReceive(Container.ShutdownEvent event) {
+                        Serializations.destroy();
                         try {
                             cacheEngine.shutdown();
                         } catch (Exception e) {
@@ -421,16 +419,6 @@ public class Cache {
                         }
                     }
                 });
-
-                Serializations.destroy();
-
-                for (String name : DataSourceManager.getDataSourceNames()) {
-                    Set<Class> classSet = ModelManager.getModels(name);
-                    if (classSet != null)
-                        for (Class clazz : classSet) {
-                            Serializations.registerClass(clazz);
-                        }
-                }
 
                 return true;
             } else

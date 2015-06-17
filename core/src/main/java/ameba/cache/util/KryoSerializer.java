@@ -3,7 +3,10 @@ package ameba.cache.util;
 import ameba.util.IOUtils;
 import com.avaje.ebean.SqlRow;
 import com.avaje.ebean.bean.BeanCollection;
-import com.esotericsoftware.kryo.*;
+import com.esotericsoftware.kryo.ClassResolver;
+import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.ReferenceResolver;
+import com.esotericsoftware.kryo.StreamFactory;
 import com.esotericsoftware.kryo.factories.SerializerFactory;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
@@ -15,7 +18,6 @@ import com.esotericsoftware.kryo.util.DefaultClassResolver;
 import com.esotericsoftware.kryo.util.FastestStreamFactory;
 import com.esotericsoftware.kryo.util.MapReferenceResolver;
 import com.esotericsoftware.minlog.Log;
-import com.google.common.collect.Lists;
 import de.javakaffee.kryoserializers.*;
 import de.javakaffee.kryoserializers.guava.ImmutableListSerializer;
 import de.javakaffee.kryoserializers.jodatime.JodaDateTimeSerializer;
@@ -32,10 +34,6 @@ import java.io.ByteArrayOutputStream;
 import java.lang.reflect.InvocationHandler;
 import java.util.Arrays;
 import java.util.GregorianCalendar;
-import java.util.List;
-
-import static com.esotericsoftware.minlog.Log.DEBUG;
-import static com.esotericsoftware.minlog.Log.debug;
 
 /**
  * @author icode
@@ -47,20 +45,14 @@ public class KryoSerializer implements Serializer {
         Log.setLogger(new Slf4jLogger());
     }
 
-    private final List<Class> registerClass = Lists.newArrayList();
     private final KryoFactory factory = new KryoFactory() {
         public Kryo create() {
-            Kryo kryo = new KryoExtends();
-            for (Class clazz : registerClass) {
-                kryo.register(clazz, -1);
-            }
-            return kryo;
+            return new KryoExtends();
         }
     };
     private final KryoPool pool = new KryoPool.Builder(factory).softReferences().build();
 
     public void registerClass(Class clazz) {
-        registerClass.add(clazz);
     }
 
     public byte[] asBytes(final Object object) {
@@ -153,6 +145,7 @@ public class KryoSerializer implements Serializer {
 
             addDefaultSerializer(BeanCollection.class, fieldSerializerFactory);
             addDefaultSerializer(SqlRow.class, fieldSerializerFactory);
+            setClassLoader(Thread.currentThread().getContextClassLoader());
         }
 
         public KryoExtends() {
@@ -169,35 +162,6 @@ public class KryoSerializer implements Serializer {
 
         public KryoExtends(ClassResolver classResolver, ReferenceResolver referenceResolver, StreamFactory streamFactory) {
             super(classResolver, referenceResolver, streamFactory);
-        }
-
-        @Override
-        public ClassLoader getClassLoader() {
-            return Thread.currentThread().getContextClassLoader();
-        }
-
-        @Override
-        public Registration register(Class type, com.esotericsoftware.kryo.Serializer serializer, int id) {
-            return register(new Registration(type, serializer, id));
-        }
-
-        public Registration register(Class type, com.esotericsoftware.kryo.Serializer serializer) {
-            Registration registration = getClassResolver().getRegistration(type);
-            if (registration != null) {
-                registration.setSerializer(serializer);
-                return registration;
-            }
-            return getClassResolver().register(new Registration(type, serializer, -1));
-        }
-
-        public Registration register(Registration registration) {
-            Registration existing = getRegistration(registration.getId());
-            if (DEBUG && existing != null && existing.getType() != registration.getType()) {
-                debug("An existing registration with a different type already uses ID: " + registration.getId()
-                        + "\nExisting registration: " + existing + "\nUnable to set registration: " + registration);
-            }
-
-            return getClassResolver().register(registration);
         }
     }
 }

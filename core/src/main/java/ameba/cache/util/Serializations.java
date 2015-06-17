@@ -29,6 +29,7 @@ public class Serializations {
     }
 
     public static <O> O asObject(final byte[] bytes) {
+        if (bytes == null) return null;
         return getSerializer().asObject(bytes);
     }
 

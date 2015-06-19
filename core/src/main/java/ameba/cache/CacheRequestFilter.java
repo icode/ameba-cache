@@ -31,7 +31,7 @@ public class CacheRequestFilter extends CacheFilter implements ContainerRequestF
         Cached cached = getCacheAnnotation();
 
 
-        if (cached != null) {
+        if (cached != null && !cached.disabled()) {
             String query = uriInfo.getRequestUri().getQuery();
             String cacheKey = Hashing.md5().hashString(
                     REQ_PROPERTY_KEY

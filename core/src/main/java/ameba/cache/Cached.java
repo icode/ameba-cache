@@ -10,6 +10,9 @@ import java.lang.annotation.RetentionPolicy;
 @Retention(RetentionPolicy.RUNTIME)
 @NameBinding
 public @interface Cached {
+
+    boolean disabled() default false;
+
     /**
      * 过期时间字符串，如 1d , 1h , 3mn , 6s
      * 优先使用此属性作为过期时间，如未配置则使用 {@link #expiration()}

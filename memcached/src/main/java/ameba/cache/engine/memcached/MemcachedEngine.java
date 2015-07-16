@@ -2,6 +2,7 @@ package ameba.cache.engine.memcached;
 
 import ameba.cache.CacheEngine;
 import ameba.cache.CacheException;
+import ameba.core.Application;
 import ameba.util.ClassUtils;
 import com.google.common.collect.Sets;
 import org.apache.commons.lang3.StringUtils;
@@ -10,7 +11,10 @@ import org.glassfish.grizzly.memcached.GrizzlyMemcachedCacheManager;
 import org.glassfish.grizzly.memcached.ValueWithCas;
 import org.glassfish.grizzly.memcached.ValueWithKey;
 import org.glassfish.grizzly.memcached.zookeeper.ZooKeeperConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import javax.inject.Inject;
 import javax.ws.rs.core.FeatureContext;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
@@ -23,8 +27,11 @@ import java.util.Set;
  * @author icode
  */
 public class MemcachedEngine<K, V> extends CacheEngine<K, V> {
-    org.glassfish.grizzly.memcached.MemcachedCache<K, V> cache;
+    private static final Logger logger = LoggerFactory.getLogger(MemcachedEngine.class);
+    private org.glassfish.grizzly.memcached.MemcachedCache<K, V> cache;
     private Map<String, Object> properties;
+    @Inject
+    private Application app;
 
     private MemcachedEngine(org.glassfish.grizzly.memcached.MemcachedCache<K, V> cache) {
         this.cache = cache;
@@ -396,7 +403,6 @@ public class MemcachedEngine<K, V> extends CacheEngine<K, V> {
         return cache.saslList(address, writeTimeoutInMillis, responseTimeoutInMillis);
     }
 
-
     @Override
     protected void configure(FeatureContext context) {
         properties = context.getConfiguration().getProperties();
@@ -410,7 +416,8 @@ public class MemcachedEngine<K, V> extends CacheEngine<K, V> {
         String zooKeeperName = (String) properties.get("cache.memcached.zk.name");
 
         if (StringUtils.isBlank(zooKeeperName)) {
-            throw new CacheException("enable ZooKeeper must be set cache.memcached.zk.name config!");
+            zooKeeperName = app.getApplicationName();
+            logger.info("ZooKeeper not set cache.memcached.zk.name config, now use app name: " + zooKeeperName);
         }
 
 

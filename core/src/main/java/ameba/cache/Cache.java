@@ -7,9 +7,11 @@ import ameba.event.SystemEventBus;
 import ameba.util.ClassUtils;
 import ameba.util.Times;
 import org.apache.commons.lang3.StringUtils;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.inject.Inject;
 import javax.ws.rs.core.FeatureContext;
 import java.util.Map;
 
@@ -396,13 +398,20 @@ public class Cache {
 
     public static class Feature implements javax.ws.rs.core.Feature {
 
+        @Inject
+        private ServiceLocator locator;
+
         @Override
         @SuppressWarnings("unchecked")
         public boolean configure(FeatureContext context) {
             if (cacheEngine != null) return true;
             String engine = (String) context.getConfiguration().getProperty("cache.engine");
             if (StringUtils.isNoneBlank(engine)) {
-                cacheEngine = ClassUtils.newInstance(engine);
+                try {
+                    cacheEngine = (CacheEngine<String, Object>) locator.createAndInitialize(ClassUtils.getClass(engine));
+                } catch (ClassNotFoundException e) {
+                    throw new CacheException("can not create cache engine: " + engine);
+                }
                 cacheEngine.configure(context);
                 context.register(CacheRequestFilter.class)
                         .register(CacheResponseFilter.class);

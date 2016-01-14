@@ -6,7 +6,6 @@ import ameba.cache.util.Serializer;
 import com.avaje.ebean.Ebean;
 import com.google.common.collect.Lists;
 import org.avaje.agentloader.AgentLoader;
-import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,7 +22,6 @@ public class FSTSerializerTest {
         }
     }
 
-    @Test
     public void testFST() {
         Serializer serializer = new FSTSerializer();
         FSTModel model = new FSTModel();

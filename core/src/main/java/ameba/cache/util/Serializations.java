@@ -11,6 +11,7 @@ public class Serializations {
     }
 
     public static void destroy() {
+        serializer.destroy();
         serializer = null;
     }
 

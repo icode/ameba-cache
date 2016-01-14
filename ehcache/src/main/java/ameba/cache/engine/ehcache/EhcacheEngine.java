@@ -126,8 +126,8 @@ public class EhcacheEngine<K, V> extends CacheEngine<K, V> {
     public Map<K, V> get(K... keys) {
         Map<Object, Element> map = cache.getAll(Arrays.asList(keys));
         Map<K, V> result = Maps.newLinkedHashMap();
-        for (Map.Entry entry : map.entrySet()) {
-            result.put((K) entry.getKey(), (V) entry.getValue());
+        for (Map.Entry<Object, Element> entry : map.entrySet()) {
+            result.put((K) entry.getKey(), (V) entry.getValue().getObjectValue());
         }
         return result;
     }

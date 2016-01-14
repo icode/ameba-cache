@@ -55,6 +55,11 @@ public class KryoSerializer implements Serializer {
     public void registerClass(Class clazz) {
     }
 
+    @Override
+    public void destroy() {
+
+    }
+
     public byte[] asBytes(final Object object) {
         return pool.run(new KryoCallback<byte[]>() {
             @Override

@@ -158,7 +158,7 @@ public class EncacheEngineTest {
         engine.syncSet("testGat", d, 3);
 
         Assert.assertEquals(d, engine.gat("testGat", 1));
-        Thread.sleep(1200);
+        Thread.sleep(5200);
 
         Assert.assertNotEquals(d, engine.get("testGat"));
     }
@@ -233,7 +233,7 @@ public class EncacheEngineTest {
         Thread.sleep(100);
         Assert.assertNotEquals(d1, engine.get("testAdd"));
 
-        Thread.sleep(3 * 1000);
+        Thread.sleep(5 * 1000);
         Assert.assertNotEquals(d, engine.get("testAdd"));
     }
 

@@ -1,7 +1,7 @@
 package ameba.cache;
 
 import ameba.cache.util.Serializations;
-import ameba.container.Container;
+import ameba.container.event.ShutdownEvent;
 import ameba.event.Listener;
 import ameba.event.SystemEventBus;
 import ameba.util.ClassUtils;
@@ -416,13 +416,14 @@ public class Cache {
                 context.register(CacheRequestFilter.class)
                         .register(CacheResponseFilter.class);
 
-                SystemEventBus.subscribe(Container.ShutdownEvent.class, new Listener<Container.ShutdownEvent>() {
+                SystemEventBus.subscribe(ShutdownEvent.class, new Listener<ShutdownEvent>() {
 
                     @Override
-                    public void onReceive(Container.ShutdownEvent event) {
+                    public void onReceive(ShutdownEvent event) {
                         Serializations.destroy();
                         try {
                             cacheEngine.shutdown();
+                            cacheEngine = null;
                         } catch (Exception e) {
                             logger.error("Cache Engine shutdown error", e);
                         }

@@ -1,28 +1,29 @@
 package ameba.cache.util;
 
 import ameba.util.IOUtils;
-import com.avaje.ebean.SqlRow;
-import com.avaje.ebean.bean.BeanCollection;
 import com.esotericsoftware.kryo.ClassResolver;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.ReferenceResolver;
 import com.esotericsoftware.kryo.StreamFactory;
-import com.esotericsoftware.kryo.factories.SerializerFactory;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import com.esotericsoftware.kryo.pool.KryoCallback;
 import com.esotericsoftware.kryo.pool.KryoFactory;
 import com.esotericsoftware.kryo.pool.KryoPool;
-import com.esotericsoftware.kryo.serializers.FieldSerializer;
 import com.esotericsoftware.kryo.util.DefaultClassResolver;
 import com.esotericsoftware.kryo.util.FastestStreamFactory;
 import com.esotericsoftware.kryo.util.MapReferenceResolver;
 import com.esotericsoftware.minlog.Log;
+import com.google.protobuf.GeneratedMessage;
 import de.javakaffee.kryoserializers.*;
 import de.javakaffee.kryoserializers.guava.ImmutableListSerializer;
+import de.javakaffee.kryoserializers.guava.ImmutableMapSerializer;
+import de.javakaffee.kryoserializers.guava.ImmutableMultimapSerializer;
+import de.javakaffee.kryoserializers.guava.ImmutableSetSerializer;
 import de.javakaffee.kryoserializers.jodatime.JodaDateTimeSerializer;
 import de.javakaffee.kryoserializers.jodatime.JodaLocalDateSerializer;
 import de.javakaffee.kryoserializers.jodatime.JodaLocalDateTimeSerializer;
+import de.javakaffee.kryoserializers.protobuf.ProtobufSerializer;
 import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
 import org.joda.time.LocalDateTime;
@@ -34,6 +35,8 @@ import java.io.ByteArrayOutputStream;
 import java.lang.reflect.InvocationHandler;
 import java.util.Arrays;
 import java.util.GregorianCalendar;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * @author icode
@@ -50,14 +53,15 @@ public class KryoSerializer implements Serializer {
             return new KryoExtends();
         }
     };
-    private final KryoPool pool = new KryoPool.Builder(factory).softReferences().build();
+    private final Queue<Kryo> queue = new ConcurrentLinkedQueue<>();
+    private final KryoPool pool = new KryoPool.Builder(factory).queue(queue).softReferences().build();
 
     public void registerClass(Class clazz) {
     }
 
     @Override
     public void destroy() {
-
+        queue.clear();
     }
 
     public byte[] asBytes(final Object object) {
@@ -138,18 +142,13 @@ public class KryoSerializer implements Serializer {
             register(DateTime.class, new JodaDateTimeSerializer());
             register(LocalDate.class, new JodaLocalDateSerializer());
             register(LocalDateTime.class, new JodaLocalDateTimeSerializer());
+            register(GeneratedMessage.class, new ProtobufSerializer());
             // guava ImmutableList
             ImmutableListSerializer.registerSerializers(this);
-            SerializerFactory fieldSerializerFactory = new SerializerFactory() {
-                @Override
-                public com.esotericsoftware.kryo.Serializer makeSerializer(Kryo kryo, Class<?> type) {
-                    return new FieldSerializer<>(kryo, BeanCollection.class.isAssignableFrom(type)
-                            ? BeanCollection.class : SqlRow.class);
-                }
-            };
-
-            addDefaultSerializer(BeanCollection.class, fieldSerializerFactory);
-            addDefaultSerializer(SqlRow.class, fieldSerializerFactory);
+            ImmutableListSerializer.registerSerializers(this);
+            ImmutableSetSerializer.registerSerializers(this);
+            ImmutableMapSerializer.registerSerializers(this);
+            ImmutableMultimapSerializer.registerSerializers(this);
             setClassLoader(Thread.currentThread().getContextClassLoader());
         }
 

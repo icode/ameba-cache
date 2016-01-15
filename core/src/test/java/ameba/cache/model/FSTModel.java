@@ -1,7 +1,6 @@
 package ameba.cache.model;
 
 import javax.persistence.Entity;
-import javax.persistence.Id;
 import javax.persistence.Transient;
 import java.util.List;
 
@@ -10,8 +9,6 @@ import java.util.List;
  */
 @Entity
 public class FSTModel extends BaseModel {
-    @Id
-    private Long id;
     private String f1;
     private Integer f2;
     @Transient

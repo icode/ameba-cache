@@ -6,6 +6,8 @@ import ameba.cache.util.Serializer;
 import com.avaje.ebean.Ebean;
 import com.google.common.collect.Lists;
 import org.avaje.agentloader.AgentLoader;
+import org.junit.Assert;
+import org.junit.Before;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,15 +17,25 @@ import org.slf4j.LoggerFactory;
 public class FSTSerializerTest {
     private static Logger logger = LoggerFactory.getLogger(FSTSerializerTest.class);
 
-    static {
+    @Before
+    public void init() {
         logger.debug("... preStart");
         if (!AgentLoader.loadAgentFromClasspath("avaje-ebeanorm-agent", "debug=1;packages=ameba.cache.*")) {
             logger.info("avaje-ebeanorm-agent not found in classpath - not dynamically loaded");
         }
     }
 
+    //    @Test
     public void testFST() {
-        Serializer serializer = new FSTSerializer();
+        testSerializer(new FSTSerializer());
+    }
+
+//    @Test
+//    public void testKryo() {
+//        testSerializer(new KryoSerializer());
+//    }
+
+    private void testSerializer(Serializer serializer) {
         FSTModel model = new FSTModel();
         model.setF1("test fst");
         model.setF2(2);
@@ -33,8 +45,10 @@ public class FSTSerializerTest {
         serializer.asObject(bytes);
 
         Ebean.save(model);
-        model = Ebean.find(FSTModel.class).findUnique();
+        model = Ebean.find(FSTModel.class, model.getId());
         bytes = serializer.asBytes(model);
-        serializer.asObject(bytes);
+        FSTModel objModel = serializer.asObject(bytes);
+        Assert.assertEquals(objModel, model);
     }
+
 }

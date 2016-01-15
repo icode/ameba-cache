@@ -40,6 +40,21 @@
         <url>https://github.com/intelligentcode/ameba-cache/issues</url>
     </issueManagement>
 
+    <repositories>
+        <repository>
+            <id>oss</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+            <releases>
+                <updatePolicy>never</updatePolicy>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+                <updatePolicy>interval:5</updatePolicy>
+            </snapshots>
+        </repository>
+    </repositories>
+
     <developers>
         <developer>
             <name>Zhang Lixin</name>

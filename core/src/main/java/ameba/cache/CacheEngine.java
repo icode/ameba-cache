@@ -57,6 +57,5 @@ public abstract class CacheEngine<K, V> {
 
     protected abstract void configure(FeatureContext context);
 
-
     public abstract <KEY, VALUE> CacheEngine<KEY, VALUE> create(String name);
 }

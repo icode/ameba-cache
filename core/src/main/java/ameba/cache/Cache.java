@@ -137,7 +137,6 @@ public class Cache {
      * Increment the element value (must be a Number) by 1.
      *
      * @param key Element key
-     * @return The new value
      */
     public static void incr(String key) {
         incr(key, 0);
@@ -150,7 +149,6 @@ public class Cache {
      * @param by               The incr value
      * @param initial          The initial value
      * @param expirationInSecs The expiration
-     * @return The new value
      */
     public static void incr(String key, int by, final long initial, final int expirationInSecs) {
         cacheEngine.incr(key, by, initial, expirationInSecs);
@@ -161,7 +159,6 @@ public class Cache {
      *
      * @param key              Element key
      * @param expirationInSecs The expiration
-     * @return The new value
      */
     public static void incr(String key, final int expirationInSecs) {
         incr(key, 1, 1, expirationInSecs);
@@ -171,7 +168,6 @@ public class Cache {
      * Increment the element value (must be a Number) by 1.
      *
      * @param key Element key
-     * @return The new value
      */
     public static void syncIncr(String key) {
         syncIncr(key, 0);
@@ -184,7 +180,6 @@ public class Cache {
      * @param by               The incr value
      * @param initial          The initial value
      * @param expirationInSecs The expiration
-     * @return The new value
      */
     public static void syncIncr(String key, int by, final long initial, final int expirationInSecs) {
         cacheEngine.syncIncr(key, by, initial, expirationInSecs);
@@ -195,7 +190,6 @@ public class Cache {
      *
      * @param key              Element key
      * @param expirationInSecs The expiration
-     * @return The new value
      */
     public static void syncIncr(String key, final int expirationInSecs) {
         syncIncr(key, 1, 1, expirationInSecs);
@@ -252,7 +246,6 @@ public class Cache {
      * @param by               The decr value
      * @param initial          The initial value
      * @param expirationInSecs The expiration
-     * @return The new value
      */
     public static void decr(String key, int by, final long initial, final int expirationInSecs) {
         cacheEngine.decr(key, by, initial, expirationInSecs);
@@ -263,7 +256,6 @@ public class Cache {
      *
      * @param key              Element key
      * @param expirationInSecs The expiration
-     * @return The new value
      */
     public static void decr(String key, final int expirationInSecs) {
         decr(key, 1, 0, expirationInSecs);
@@ -273,7 +265,6 @@ public class Cache {
      * Decrement the element value (must be a Number) by 1.
      *
      * @param key Element key
-     * @return The new value
      */
     public static void decr(String key) {
         decr(key, 0);
@@ -286,7 +277,6 @@ public class Cache {
      * @param by               The decr value
      * @param initial          The initial value
      * @param expirationInSecs The expiration
-     * @return The new value
      */
     public static void syncDecr(String key, int by, final long initial, final int expirationInSecs) {
         cacheEngine.syncDecr(key, by, initial, expirationInSecs);
@@ -297,7 +287,6 @@ public class Cache {
      *
      * @param key              Element key
      * @param expirationInSecs The expiration
-     * @return The new value
      */
     public static void syncDecr(String key, final int expirationInSecs) {
         syncDecr(key, 1, 0, expirationInSecs);
@@ -307,7 +296,6 @@ public class Cache {
      * Decrement the element value (must be a Number) by 1.
      *
      * @param key Element key
-     * @return The new value
      */
     public static void syncDecr(String key) {
         syncDecr(key, 0);

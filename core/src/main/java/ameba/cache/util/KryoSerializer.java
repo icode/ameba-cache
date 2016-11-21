@@ -14,7 +14,6 @@ import com.esotericsoftware.kryo.util.DefaultClassResolver;
 import com.esotericsoftware.kryo.util.FastestStreamFactory;
 import com.esotericsoftware.kryo.util.MapReferenceResolver;
 import com.esotericsoftware.minlog.Log;
-import com.google.protobuf.GeneratedMessage;
 import de.javakaffee.kryoserializers.*;
 import de.javakaffee.kryoserializers.guava.ImmutableListSerializer;
 import de.javakaffee.kryoserializers.guava.ImmutableMapSerializer;
@@ -23,7 +22,6 @@ import de.javakaffee.kryoserializers.guava.ImmutableSetSerializer;
 import de.javakaffee.kryoserializers.jodatime.JodaDateTimeSerializer;
 import de.javakaffee.kryoserializers.jodatime.JodaLocalDateSerializer;
 import de.javakaffee.kryoserializers.jodatime.JodaLocalDateTimeSerializer;
-import de.javakaffee.kryoserializers.protobuf.ProtobufSerializer;
 import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
 import org.joda.time.LocalDateTime;
@@ -124,7 +122,6 @@ public class KryoSerializer implements Serializer {
 
     public static class KryoExtends extends Kryo {
         {
-            setAsmEnabled(true);
             setAutoReset(false);
 
             setInstantiatorStrategy(new DefaultInstantiatorStrategy(new StdInstantiatorStrategy()));
@@ -142,7 +139,6 @@ public class KryoSerializer implements Serializer {
             register(DateTime.class, new JodaDateTimeSerializer());
             register(LocalDate.class, new JodaLocalDateSerializer());
             register(LocalDateTime.class, new JodaLocalDateTimeSerializer());
-            register(GeneratedMessage.class, new ProtobufSerializer());
             // guava ImmutableList
             ImmutableListSerializer.registerSerializers(this);
             ImmutableListSerializer.registerSerializers(this);

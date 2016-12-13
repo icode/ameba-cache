@@ -6,10 +6,7 @@ import ameba.core.Application;
 import ameba.util.ClassUtils;
 import com.google.common.collect.Sets;
 import org.apache.commons.lang3.StringUtils;
-import org.glassfish.grizzly.memcached.GrizzlyMemcachedCache;
-import org.glassfish.grizzly.memcached.GrizzlyMemcachedCacheManager;
-import org.glassfish.grizzly.memcached.ValueWithCas;
-import org.glassfish.grizzly.memcached.ValueWithKey;
+import org.glassfish.grizzly.memcached.*;
 import org.glassfish.grizzly.memcached.zookeeper.ZooKeeperConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,12 +25,12 @@ import java.util.Set;
  */
 public class MemcachedEngine<K, V> extends CacheEngine<K, V> {
     private static final Logger logger = LoggerFactory.getLogger(MemcachedEngine.class);
-    private org.glassfish.grizzly.memcached.MemcachedCache<K, V> cache;
+    private MemcachedCache<K, V> cache;
     private Map<String, Object> properties;
     @Inject
     private Application app;
 
-    private MemcachedEngine(org.glassfish.grizzly.memcached.MemcachedCache<K, V> cache) {
+    private MemcachedEngine(MemcachedCache<K, V> cache) {
         this.cache = cache;
     }
 
@@ -41,18 +38,18 @@ public class MemcachedEngine<K, V> extends CacheEngine<K, V> {
     }
 
     public static <K, V> MemcachedEngine<K, V> create(Set<SocketAddress> servers) {
-        return new MemcachedEngine<>(MemcachedCache.<K, V>create(servers));
+        return new MemcachedEngine<>(Caches.<K, V>create(servers));
     }
 
     public static <K, V> MemcachedEngine<K, V> create(GrizzlyMemcachedCacheManager manager, Set<SocketAddress> servers) {
-        return new MemcachedEngine<>(MemcachedCache.<K, V>create(manager, servers));
+        return new MemcachedEngine<>(Caches.<K, V>create(manager, servers));
     }
 
     public static <K, V> MemcachedEngine<K, V> create(String cacheName, GrizzlyMemcachedCacheManager manager, Set<SocketAddress> servers) {
-        return new MemcachedEngine<>(MemcachedCache.<K, V>create(cacheName, manager, servers));
+        return new MemcachedEngine<>(Caches.<K, V>create(cacheName, manager, servers));
     }
 
-    public static <K, V> MemcachedEngine<K, V> create(org.glassfish.grizzly.memcached.MemcachedCache<K, V> cache) {
+    public static <K, V> MemcachedEngine<K, V> create(MemcachedCache<K, V> cache) {
         return new MemcachedEngine<>(cache);
     }
 
@@ -460,15 +457,15 @@ public class MemcachedEngine<K, V> extends CacheEngine<K, V> {
 
         String ioStrategy = (String) properties.get("cache.memcached.ioStrategy");
         if (StringUtils.isNotBlank(ioStrategy))
-            builder.ioStrategy((org.glassfish.grizzly.IOStrategy) ClassUtils.newInstance(ioStrategy));
+            builder.ioStrategy(ClassUtils.newInstance(ioStrategy));
 
         String transport = (String) properties.get("cache.memcached.transport");
         if (StringUtils.isNotBlank(transport))
-            builder.transport((org.glassfish.grizzly.nio.transport.TCPNIOTransport) ClassUtils.newInstance(transport));
+            builder.transport(ClassUtils.newInstance(transport));
 
         String workerThreadPool = (String) properties.get("cache.memcached.workerThreadPool");
         if (StringUtils.isNotBlank(workerThreadPool))
-            builder.workerThreadPool((java.util.concurrent.ExecutorService) ClassUtils.newInstance(workerThreadPool));
+            builder.workerThreadPool(ClassUtils.newInstance(workerThreadPool));
 
         String zooKeeperEnabled = (String) properties.get("cache.memcached.zk.enabled");
 
@@ -566,7 +563,7 @@ public class MemcachedEngine<K, V> extends CacheEngine<K, V> {
             cacheBuilder.writeTimeoutInMillis(Long.parseLong(writeTimeoutInMillis));
     }
 
-    public <KEY, VALUE> org.glassfish.grizzly.memcached.MemcachedCache<KEY, VALUE> _create(String name) {
+    public <KEY, VALUE> MemcachedCache<KEY, VALUE> _create(String name) {
         GrizzlyMemcachedCacheManager.Builder builder = new GrizzlyMemcachedCacheManager.Builder();
 
         configureCacheManager(properties, builder);
@@ -581,16 +578,16 @@ public class MemcachedEngine<K, V> extends CacheEngine<K, V> {
         return cacheBuilder.build();
     }
 
-    public static class MemcachedCache {
-        public static <K, V> org.glassfish.grizzly.memcached.MemcachedCache<K, V> create(Set<SocketAddress> servers) {
+    public static class Caches {
+        public static <K, V> MemcachedCache<K, V> create(Set<SocketAddress> servers) {
             return create(new GrizzlyMemcachedCacheManager.Builder().build(), servers);
         }
 
-        public static <K, V> org.glassfish.grizzly.memcached.MemcachedCache<K, V> create(GrizzlyMemcachedCacheManager manager, Set<SocketAddress> servers) {
+        public static <K, V> MemcachedCache<K, V> create(GrizzlyMemcachedCacheManager manager, Set<SocketAddress> servers) {
             return create(DEFAULT_CACHE_NAME, manager, servers);
         }
 
-        public static <K, V> org.glassfish.grizzly.memcached.MemcachedCache<K, V> create(String cacheName, GrizzlyMemcachedCacheManager manager, Set<SocketAddress> servers) {
+        public static <K, V> MemcachedCache<K, V> create(String cacheName, GrizzlyMemcachedCacheManager manager, Set<SocketAddress> servers) {
             // gets the cache builder
             final GrizzlyMemcachedCache.Builder<K, V> builder = manager.createCacheBuilder(cacheName);
             // initializes Memcached's list
@@ -599,7 +596,7 @@ public class MemcachedEngine<K, V> extends CacheEngine<K, V> {
             return create(builder);
         }
 
-        public static <K, V> org.glassfish.grizzly.memcached.MemcachedCache<K, V> create(GrizzlyMemcachedCache.Builder<K, V> builder) {
+        public static <K, V> MemcachedCache<K, V> create(GrizzlyMemcachedCache.Builder<K, V> builder) {
             return builder.build();
         }
     }

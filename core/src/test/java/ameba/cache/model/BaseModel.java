@@ -1,8 +1,8 @@
 package ameba.cache.model;
 
 import ameba.db.model.Model;
-import com.avaje.ebean.annotation.CreatedTimestamp;
-import com.avaje.ebean.annotation.UpdatedTimestamp;
+import io.ebean.annotation.CreatedTimestamp;
+import io.ebean.annotation.UpdatedTimestamp;
 
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;

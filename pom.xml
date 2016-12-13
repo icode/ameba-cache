@@ -6,7 +6,7 @@
 
     <groupId>org.amebastack.module</groupId>
     <artifactId>ameba-cache</artifactId>
-    <version>0.1.9-SNAPSHOT</version>
+    <version>0.1.9</version>
     <modules>
         <module>core</module>
         <module>memcached</module>
@@ -138,8 +138,8 @@
                 <version>2.5.1</version>
                 <inherited>true</inherited>
                 <configuration>
-                    <source>1.7</source>
-                    <target>1.7</target>
+                    <source>1.8</source>
+                    <target>1.8</target>
                 </configuration>
             </plugin>
         </plugins>
@@ -160,7 +160,7 @@
         </dependency>
     </dependencies>
     <properties>
-        <ameba.version>0.1.8</ameba.version>
+        <ameba.version>0.1.11</ameba.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 

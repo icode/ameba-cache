@@ -5,7 +5,7 @@
     <parent>
         <artifactId>ameba-cache</artifactId>
         <groupId>org.amebastack.module</groupId>
-        <version>0.1.9-SNAPSHOT</version>
+        <version>0.1.9</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -89,10 +89,9 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.avaje.ebeanorm</groupId>
-            <artifactId>avaje-ebeanorm-agent</artifactId>
-            <version>4.5.1</version>
-            <scope>test</scope>
+            <groupId>io.ebean</groupId>
+            <artifactId>ebean-agent</artifactId>
+            <version>10.1.1</version>
         </dependency>
         <dependency>
             <groupId>com.h2database</groupId>

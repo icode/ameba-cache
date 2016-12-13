@@ -2,7 +2,6 @@ package ameba.cache;
 
 import ameba.cache.util.Serializations;
 import ameba.container.event.ShutdownEvent;
-import ameba.event.Listener;
 import ameba.event.SystemEventBus;
 import ameba.util.ClassUtils;
 import ameba.util.Times;
@@ -305,7 +304,7 @@ public class Cache {
      * Bulk retrieve.
      *
      * @param key List of keys
-     * @return Map of keys & values
+     * @return Map of keys and values
      */
     public static Map<String, Object> get(String... key) {
         Map<String, Object> result = cacheEngine.get(key);
@@ -404,17 +403,13 @@ public class Cache {
                 context.register(CacheRequestFilter.class)
                         .register(CacheResponseFilter.class);
 
-                SystemEventBus.subscribe(ShutdownEvent.class, new Listener<ShutdownEvent>() {
-
-                    @Override
-                    public void onReceive(ShutdownEvent event) {
-                        Serializations.destroy();
-                        try {
-                            cacheEngine.shutdown();
-                            cacheEngine = null;
-                        } catch (Exception e) {
-                            logger.error("Cache Engine shutdown error", e);
-                        }
+                SystemEventBus.subscribe(ShutdownEvent.class, event -> {
+                    Serializations.destroy();
+                    try {
+                        cacheEngine.shutdown();
+                        cacheEngine = null;
+                    } catch (Exception e) {
+                        logger.error("Cache Engine shutdown error", e);
                     }
                 });
 

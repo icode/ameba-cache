@@ -10,7 +10,6 @@ import org.junit.Test;
 
 import java.io.Serializable;
 import java.net.InetSocketAddress;
-import java.net.SocketAddress;
 import java.util.Map;
 
 /**
@@ -22,7 +21,7 @@ public class MemcachedEngineTest {
 
     @Before
     public void init() {
-        engine = MemcachedEngine.create(Sets.<SocketAddress>newHashSet(new InetSocketAddress("127.0.0.1", 11211)));
+        engine = MemcachedEngine.create(Sets.newHashSet(new InetSocketAddress("localhost", 11211)));
     }
 
     @After
@@ -221,7 +220,7 @@ public class MemcachedEngineTest {
         engine.clear();
 
         Data d = new Data("a", "b", "c");
-        engine.add("testAdd", d, 3);
+        engine.syncAdd("testAdd", d, 1);
 
         Thread.sleep(100);
 

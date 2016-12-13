@@ -7,7 +7,6 @@ import com.esotericsoftware.kryo.ReferenceResolver;
 import com.esotericsoftware.kryo.StreamFactory;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
-import com.esotericsoftware.kryo.pool.KryoCallback;
 import com.esotericsoftware.kryo.pool.KryoFactory;
 import com.esotericsoftware.kryo.pool.KryoPool;
 import com.esotericsoftware.kryo.util.DefaultClassResolver;
@@ -19,12 +18,6 @@ import de.javakaffee.kryoserializers.guava.ImmutableListSerializer;
 import de.javakaffee.kryoserializers.guava.ImmutableMapSerializer;
 import de.javakaffee.kryoserializers.guava.ImmutableMultimapSerializer;
 import de.javakaffee.kryoserializers.guava.ImmutableSetSerializer;
-import de.javakaffee.kryoserializers.jodatime.JodaDateTimeSerializer;
-import de.javakaffee.kryoserializers.jodatime.JodaLocalDateSerializer;
-import de.javakaffee.kryoserializers.jodatime.JodaLocalDateTimeSerializer;
-import org.joda.time.DateTime;
-import org.joda.time.LocalDate;
-import org.joda.time.LocalDateTime;
 import org.objenesis.strategy.StdInstantiatorStrategy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,11 +39,7 @@ public class KryoSerializer implements Serializer {
         Log.setLogger(new Slf4jLogger());
     }
 
-    private final KryoFactory factory = new KryoFactory() {
-        public Kryo create() {
-            return new KryoExtends();
-        }
-    };
+    private final KryoFactory factory = KryoExtends::new;
     private final Queue<Kryo> queue = new ConcurrentLinkedQueue<>();
     private final KryoPool pool = new KryoPool.Builder(factory).queue(queue).softReferences().build();
 
@@ -63,36 +52,30 @@ public class KryoSerializer implements Serializer {
     }
 
     public byte[] asBytes(final Object object) {
-        return pool.run(new KryoCallback<byte[]>() {
-            @Override
-            public byte[] execute(Kryo kryo) {
-                ByteArrayOutputStream out = new ByteArrayOutputStream();
-                Output output = new Output(out, 1024);
-                kryo.writeClassAndObject(output, object);
-                output.flush();
-                try {
-                    return out.toByteArray();
-                } finally {
-                    IOUtils.closeQuietly(output);
-                    IOUtils.closeQuietly(out);
-                    kryo.reset();
-                }
+        return pool.run(kryo -> {
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            Output output = new Output(out, 1024);
+            kryo.writeClassAndObject(output, object);
+            output.flush();
+            try {
+                return out.toByteArray();
+            } finally {
+                IOUtils.closeQuietly(output);
+                IOUtils.closeQuietly(out);
+                kryo.reset();
             }
         });
     }
 
     @SuppressWarnings("unchecked")
     public <O> O asObject(final byte[] bytes) {
-        return pool.run(new KryoCallback<O>() {
-            @Override
-            public O execute(Kryo kryo) {
-                Input input = new Input(bytes, 0, 1024);
-                try {
-                    return (O) kryo.readClassAndObject(input);
-                } finally {
-                    IOUtils.closeQuietly(input);
-                    kryo.reset();
-                }
+        return pool.run(kryo -> {
+            Input input = new Input(bytes, 0, 1024);
+            try {
+                return (O) kryo.readClassAndObject(input);
+            } finally {
+                IOUtils.closeQuietly(input);
+                kryo.reset();
             }
         });
     }
@@ -136,9 +119,9 @@ public class KryoSerializer implements Serializer {
             // register CGLibProxySerializer, works in combination with the appropriate action in handleUnregisteredClass (see below)
 //            register(CGLibProxySerializer.CGLibProxyMarker.class, new CGLibProxySerializer());
             // joda DateTime, LocalDate and LocalDateTime
-            register(DateTime.class, new JodaDateTimeSerializer());
-            register(LocalDate.class, new JodaLocalDateSerializer());
-            register(LocalDateTime.class, new JodaLocalDateTimeSerializer());
+//            register(DateTime.class, new JodaDateTimeSerializer());
+//            register(LocalDate.class, new JodaLocalDateSerializer());
+//            register(LocalDateTime.class, new JodaLocalDateTimeSerializer());
             // guava ImmutableList
             ImmutableListSerializer.registerSerializers(this);
             ImmutableListSerializer.registerSerializers(this);

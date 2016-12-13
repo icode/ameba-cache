@@ -3,8 +3,8 @@ package ameba.cache;
 import ameba.cache.model.FSTModel;
 import ameba.cache.util.FSTSerializer;
 import ameba.cache.util.Serializer;
-import com.avaje.ebean.Ebean;
 import com.google.common.collect.Lists;
+import io.ebean.Ebean;
 import org.avaje.agentloader.AgentLoader;
 import org.junit.Assert;
 import org.junit.Before;
@@ -20,8 +20,8 @@ public class FSTSerializerTest {
     @Before
     public void init() {
         logger.debug("... preStart");
-        if (!AgentLoader.loadAgentFromClasspath("avaje-ebeanorm-agent", "debug=1;packages=ameba.cache.*")) {
-            logger.info("avaje-ebeanorm-agent not found in classpath - not dynamically loaded");
+        if (!AgentLoader.loadAgentFromClasspath("ebean-agent", "debug=1;packages=ameba.cache.*")) {
+            logger.info("ebean-agent not found in classpath - not dynamically loaded");
         }
     }
 

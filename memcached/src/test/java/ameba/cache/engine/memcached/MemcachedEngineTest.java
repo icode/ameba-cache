@@ -37,7 +37,7 @@ public class MemcachedEngineTest {
         Data d1 = new Data("a1", "b1", "c1");
 
         engine.replace("testReplace", d1, 1);
-        Thread.sleep(100);
+        Thread.sleep(500);
         Assert.assertEquals(d1, engine.get("testReplace"));
     }
 
@@ -61,11 +61,11 @@ public class MemcachedEngineTest {
     public void testDecr() throws InterruptedException {
         engine.syncDelete("testDecr");
         engine.decr("testDecr", 1, 5, 3);
-        Thread.sleep(100);
+        Thread.sleep(500);
         Assert.assertEquals(5L, engine.syncDecr("testDecr", 0, 0, 3));
 
         engine.decr("testDecr", 5, 1, 1);
-        Thread.sleep(100);
+        Thread.sleep(500);
         Assert.assertEquals(0L, engine.syncDecr("testDecr", 0, 0, 1));
     }
 
@@ -105,7 +105,7 @@ public class MemcachedEngineTest {
 
         engine.delete("testDelete");
 
-        Thread.sleep(3 * 1000);
+        Thread.sleep(3 * 5000);
 
         Assert.assertNotEquals(d, engine.get("testDelete"));
     }
@@ -122,12 +122,12 @@ public class MemcachedEngineTest {
     public void testIncr() throws InterruptedException {
         engine.syncDelete("testIncr");
         engine.incr("testIncr", 1, 1, 3);
-        Thread.sleep(100);
+        Thread.sleep(500);
 
         Assert.assertEquals(1, engine.syncIncr("testIncr", 0, 0, 3));
 
         engine.incr("testIncr", 5, 1, 1);
-        Thread.sleep(100);
+        Thread.sleep(500);
         Assert.assertEquals(6, engine.syncIncr("testIncr", 0, 0, 1));
     }
 
@@ -160,7 +160,7 @@ public class MemcachedEngineTest {
         engine.syncSet("testGat", d, 3);
 
         Assert.assertEquals(d, engine.gat("testGat", 1));
-        Thread.sleep(1000);
+        Thread.sleep(5000);
 
         Assert.assertNotEquals(d, engine.get("testGat"));
     }
@@ -176,7 +176,7 @@ public class MemcachedEngineTest {
         engine.set("testSafeSet", d1, 3);
         Assert.assertEquals(d1, engine.get("testSafeSet"));
 
-        Thread.sleep(3 * 1000);
+        Thread.sleep(3 * 5000);
         Assert.assertNotEquals(d, engine.get("testSafeSet"));
     }
 
@@ -185,32 +185,31 @@ public class MemcachedEngineTest {
         Data d = new Data("a", "b", "c");
         engine.set("testSet", d, 3);
 
-        Thread.sleep(100);
+        Thread.sleep(500);
 
         Assert.assertEquals(d, engine.get("testSet"));
 
 
         Data d1 = new Data("a1", "b1", "c1");
         engine.set("testSet", d1, 3);
-        Thread.sleep(100);
+        Thread.sleep(500);
         Assert.assertEquals(d1, engine.get("testSet"));
 
-        Thread.sleep(3 * 1000);
+        Thread.sleep(3 * 5000);
         Assert.assertNotEquals(d, engine.get("testSet"));
     }
 
     @Test
     public void testTouch() throws InterruptedException {
         Data d = new Data("a", "b", "c");
-        engine.syncAdd("testTouch", d, 3);
+        engine.syncAdd("testTouch", d, 5);
 
         Assert.assertEquals(d, engine.get("testTouch"));
 
-        Thread.sleep(2 * 1000);
-        engine.touch("testTouch", 3);
+        engine.touch("testTouch", 5);
         Assert.assertEquals(d, engine.get("testTouch"));
 
-        Thread.sleep(3 * 1000);
+        Thread.sleep(3 * 5000);
         Assert.assertNotEquals(d, engine.get("testTouch"));
     }
 
@@ -222,16 +221,16 @@ public class MemcachedEngineTest {
         Data d = new Data("a", "b", "c");
         engine.syncAdd("testAdd", d, 1);
 
-        Thread.sleep(100);
+        Thread.sleep(500);
 
         Assert.assertEquals(d, engine.get("testAdd"));
 
         Data d1 = new Data("a1", "b1", "c1");
         engine.add("testAdd", d1, 3);
-        Thread.sleep(100);
+        Thread.sleep(500);
         Assert.assertNotEquals(d1, engine.get("testAdd"));
 
-        Thread.sleep(3 * 1000);
+        Thread.sleep(3 * 5000);
         Assert.assertNotEquals(d, engine.get("testAdd"));
     }
 
@@ -246,7 +245,7 @@ public class MemcachedEngineTest {
         engine.syncAdd("testSafeAdd", d1, 3);
         Assert.assertNotEquals(d1, engine.get("testSafeAdd"));
 
-        Thread.sleep(3 * 1000);
+        Thread.sleep(3 * 5000);
         Assert.assertNotEquals(d, engine.get("testSafeAdd"));
     }
 

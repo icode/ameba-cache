@@ -211,7 +211,7 @@ public class EncacheEngineTest {
 
         engine.get("testTouch");
 
-        Thread.sleep(1000);
+        Thread.sleep(5 * 1000);
         Assert.assertNotEquals(d, engine.get("testTouch"));
     }
 

@@ -204,7 +204,6 @@ public class EncacheEngineTest {
 
         Assert.assertEquals(d, engine.get("testTouch"));
 
-        Thread.sleep(2 * 1000);
         engine.touch("testTouch", 3);
         Assert.assertEquals(d, engine.get("testTouch"));
 

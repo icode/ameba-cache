@@ -1,5 +1,6 @@
 package ameba.cache;
 
+import com.thoughtworks.paranamer.AdaptiveParanamer;
 import org.apache.commons.lang3.StringUtils;
 import org.glassfish.hk2.api.*;
 import org.glassfish.jersey.internal.inject.AbstractBinder;
@@ -25,6 +26,8 @@ public class CacheBinder extends AbstractBinder {
 
     protected static class CachedInjectionResolver implements InjectionResolver<Cached> {
 
+        private AdaptiveParanamer paranamer = new AdaptiveParanamer();
+
         protected Object _get(String key, int expiration, Cached cached) {
             if (cached.touch())
                 return Cache.gat(key, expiration);
@@ -35,18 +38,25 @@ public class CacheBinder extends AbstractBinder {
         @Override
         public Object resolve(Injectee injectee, ServiceHandle<?> root) {
             AnnotatedElement element = injectee.getParent();
-            Cached cached = element.getAnnotation(Cached.class);
+            Cached cached;
+            if (injectee.getPosition() == -1)
+                cached = element.getAnnotation(Cached.class);
+            else
+                cached = ((Executable) element).getParameters()[injectee.getPosition()].getAnnotation(Cached.class);
+
             String key = cached.key();
             if (StringUtils.isBlank(key)) {
                 if (element instanceof Field) {
-                    Field field = (Field) element;
-                    key = field.getName();
-                } else if (element instanceof Constructor) {
-                    Constructor constructor = (Constructor) element;
-                    key = constructor.getParameters()[injectee.getPosition()].getName();
-                } else if (element instanceof Method) {
-                    Method method = (Method) element;
-                    key = method.getParameters()[injectee.getPosition()].getName();
+                    key = ((Field) element).getName();
+                } else if (element instanceof Executable) {
+                    Executable executable = (Executable) element;
+                    Parameter parameter = executable.getParameters()[injectee.getPosition()];
+                    if (parameter.isNamePresent()) {
+                        key = parameter.getName();
+                    } else {
+                        String[] names = paranamer.lookupParameterNames(executable, false);
+                        key = names[injectee.getPosition()];
+                    }
                 } else {
                     throw new MultiException(new UnsatisfiedDependencyException(injectee));
                 }
@@ -84,7 +94,7 @@ public class CacheBinder extends AbstractBinder {
 
         @Override
         public boolean isMethodParameterIndicator() {
-            return true;
+            return false;
         }
     }
 

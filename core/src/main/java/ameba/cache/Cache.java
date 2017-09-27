@@ -168,8 +168,8 @@ public class Cache {
      *
      * @param key Element key
      */
-    public static void syncIncr(String key) {
-        syncIncr(key, 0);
+    public static long syncIncr(String key) {
+        return syncIncr(key, 0);
     }
 
     /**
@@ -180,8 +180,8 @@ public class Cache {
      * @param initial          The initial value
      * @param expirationInSecs The expiration
      */
-    public static void syncIncr(String key, int by, final long initial, final int expirationInSecs) {
-        cacheEngine.syncIncr(key, by, initial, expirationInSecs);
+    public static long syncIncr(String key, int by, final long initial, final int expirationInSecs) {
+        return cacheEngine.syncIncr(key, by, initial, expirationInSecs);
     }
 
     /**
@@ -190,8 +190,8 @@ public class Cache {
      * @param key              Element key
      * @param expirationInSecs The expiration
      */
-    public static void syncIncr(String key, final int expirationInSecs) {
-        syncIncr(key, 1, 1, expirationInSecs);
+    public static long syncIncr(String key, final int expirationInSecs) {
+        return syncIncr(key, 1, 1, expirationInSecs);
     }
 
     public static void add(String key, Object value, int expiration) {
@@ -277,8 +277,8 @@ public class Cache {
      * @param initial          The initial value
      * @param expirationInSecs The expiration
      */
-    public static void syncDecr(String key, int by, final long initial, final int expirationInSecs) {
-        cacheEngine.syncDecr(key, by, initial, expirationInSecs);
+    public static long syncDecr(String key, int by, final long initial, final int expirationInSecs) {
+        return cacheEngine.syncDecr(key, by, initial, expirationInSecs);
     }
 
     /**
@@ -287,8 +287,8 @@ public class Cache {
      * @param key              Element key
      * @param expirationInSecs The expiration
      */
-    public static void syncDecr(String key, final int expirationInSecs) {
-        syncDecr(key, 1, 0, expirationInSecs);
+    public static long syncDecr(String key, final int expirationInSecs) {
+        return syncDecr(key, 1, 0, expirationInSecs);
     }
 
     /**
@@ -296,8 +296,8 @@ public class Cache {
      *
      * @param key Element key
      */
-    public static void syncDecr(String key) {
-        syncDecr(key, 0);
+    public static long syncDecr(String key) {
+        return syncDecr(key, 0);
     }
 
     /**
@@ -392,6 +392,7 @@ public class Cache {
         @SuppressWarnings("unchecked")
         public boolean configure(FeatureContext context) {
             if (cacheEngine != null) return true;
+            context.register(new CacheBinder());
             String engine = (String) context.getConfiguration().getProperty("cache.engine");
             if (StringUtils.isNoneBlank(engine)) {
                 try {

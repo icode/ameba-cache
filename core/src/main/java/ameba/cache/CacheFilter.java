@@ -13,12 +13,13 @@ import java.lang.annotation.Annotation;
 public abstract class CacheFilter {
 
     public static final String REQ_PROPERTY_KEY = Cache.class.getName() + "." + CacheEngine.DEFAULT_CACHE_NAME;
-    public static final String REQ_PROPERTY_ANNOTATION_KEY = Cache.class.getName() + "." + CacheEngine.DEFAULT_CACHE_NAME + "CACHE_ANNOTATION";
+    public static final String REQ_PROPERTY_ANNOTATION_KEY = Cache.class.getName() + "."
+            + CacheEngine.DEFAULT_CACHE_NAME + "CACHE_ANNOTATION";
 
     @Context
     protected ResourceInfo resourceInfo;
 
-    protected int parseExpiration(Cached cached) {
+    protected static int parseExpiration(Cached cached) {
         return StringUtils.isNotBlank(cached.value()) ? Times.parseDuration(cached.value()) : cached.expiration();
     }
 

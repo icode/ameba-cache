@@ -38,18 +38,6 @@ public interface CacheValue<V> {
 
     boolean touch(int expiration);
 
-    void incr();
-
-    void incr(int by, final long initial);
-
-    void incr(int by, final long initial, final int expirationInSecs);
-
-    void decr();
-
-    void decr(int by, final long initial);
-
-    void decr(int by, final long initial, final int expirationInSecs);
-
     long syncIncr();
 
     long syncIncr(int by, final long initial);

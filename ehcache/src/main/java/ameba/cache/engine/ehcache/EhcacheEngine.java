@@ -133,16 +133,6 @@ public class EhcacheEngine<K, V> extends CacheEngine<K, V> {
     }
 
     @Override
-    public void incr(K key, int by, long initial, int expirationInSecs) {
-        syncIncr(key, by, initial, expirationInSecs);
-    }
-
-    @Override
-    public void decr(K key, int by, long initial, int expirationInSecs) {
-        syncDecr(key, by, initial, expirationInSecs);
-    }
-
-    @Override
     public long syncIncr(K key, int by, long initial, int expirationInSecs) {
         Element e = cache.getQuiet(key);
         long newValue = initial;

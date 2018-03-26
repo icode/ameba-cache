@@ -102,16 +102,6 @@ public class MemcachedEngine<K, V> extends CacheEngine<K, V> {
     }
 
     @Override
-    public void incr(K key, int by, final long initial, final int expirationInSecs) {
-        cache.incr(key, by, initial, expirationInSecs, true);
-    }
-
-    @Override
-    public void decr(K key, int by, final long initial, final int expirationInSecs) {
-        cache.decr(key, by, initial, expirationInSecs, true);
-    }
-
-    @Override
     public long syncIncr(K key, int by, long initial, int expirationInSecs) {
         return cache.incr(key, by, initial, expirationInSecs, false);
     }

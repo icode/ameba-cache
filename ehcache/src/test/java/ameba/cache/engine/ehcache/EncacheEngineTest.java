@@ -23,7 +23,7 @@ public class EncacheEngineTest {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         engine.shutdown();
     }
 
@@ -53,18 +53,6 @@ public class EncacheEngineTest {
 
         Assert.assertEquals(d, objs.get("testGet"));
         Assert.assertEquals(d1, objs.get("testGet2"));
-    }
-
-    @Test
-    public void testDecr() throws InterruptedException {
-        engine.syncDelete("testDecr");
-        engine.decr("testDecr", 1, 5, 3);
-        Thread.sleep(100);
-        Assert.assertEquals(5L, engine.syncDecr("testDecr", 0, 0, 3));
-
-        engine.decr("testDecr", 5, 1, 1);
-        Thread.sleep(100);
-        Assert.assertEquals(0L, engine.syncDecr("testDecr", 0, 0, 1));
     }
 
     @Test
@@ -115,20 +103,6 @@ public class EncacheEngineTest {
 
         Assert.assertEquals(6L, engine.syncIncr("testSafeIncr", 5, 1, 1));
     }
-
-    @Test
-    public void testIncr() throws InterruptedException {
-        engine.syncDelete("testIncr");
-        engine.incr("testIncr", 1, 1, 3);
-        Thread.sleep(100);
-
-        Assert.assertEquals(1, engine.syncIncr("testIncr", 0, 0, 3));
-
-        engine.incr("testIncr", 5, 1, 1);
-        Thread.sleep(100);
-        Assert.assertEquals(6, engine.syncIncr("testIncr", 0, 0, 1));
-    }
-
 
     @Test
     public void testSafeReplace() {

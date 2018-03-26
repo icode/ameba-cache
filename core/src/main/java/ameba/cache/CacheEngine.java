@@ -34,10 +34,6 @@ public abstract class CacheEngine<K, V> {
     @SuppressWarnings("unchecked")
     public abstract Map<K, V> get(K... keys);
 
-    public abstract void incr(K key, int by, final long initial, final int expirationInSecs);
-
-    public abstract void decr(K key, int by, final long initial, final int expirationInSecs);
-
     public abstract long syncIncr(K key, int by, final long initial, final int expirationInSecs);
 
     public abstract long syncDecr(K key, int by, final long initial, final int expirationInSecs);

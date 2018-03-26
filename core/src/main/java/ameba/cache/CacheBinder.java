@@ -194,36 +194,6 @@ public class CacheBinder extends AbstractBinder {
         }
 
         @Override
-        public void incr() {
-            Cache.incr(key, expiration);
-        }
-
-        @Override
-        public void incr(int by, long initial) {
-            Cache.incr(key, by, initial, expiration);
-        }
-
-        @Override
-        public void incr(int by, long initial, int expirationInSecs) {
-            Cache.incr(key, by, initial, expirationInSecs);
-        }
-
-        @Override
-        public void decr() {
-            Cache.decr(key, expiration);
-        }
-
-        @Override
-        public void decr(int by, long initial) {
-            Cache.decr(key, by, initial, expiration);
-        }
-
-        @Override
-        public void decr(int by, long initial, int expirationInSecs) {
-            Cache.decr(key, by, initial, expirationInSecs);
-        }
-
-        @Override
         public long syncIncr() {
             return Cache.syncIncr(key, expiration);
         }

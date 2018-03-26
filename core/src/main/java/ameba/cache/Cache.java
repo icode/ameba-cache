@@ -137,37 +137,6 @@ public class Cache {
      *
      * @param key Element key
      */
-    public static void incr(String key) {
-        incr(key, 0);
-    }
-
-    /**
-     * Increment the element value (must be a Number).
-     *
-     * @param key              Element key
-     * @param by               The incr value
-     * @param initial          The initial value
-     * @param expirationInSecs The expiration
-     */
-    public static void incr(String key, int by, final long initial, final int expirationInSecs) {
-        cacheEngine.incr(key, by, initial, expirationInSecs);
-    }
-
-    /**
-     * Increment the element value (must be a Number) by 1.
-     *
-     * @param key              Element key
-     * @param expirationInSecs The expiration
-     */
-    public static void incr(String key, final int expirationInSecs) {
-        incr(key, 1, 1, expirationInSecs);
-    }
-
-    /**
-     * Increment the element value (must be a Number) by 1.
-     *
-     * @param key Element key
-     */
     public static long syncIncr(String key) {
         return syncIncr(key, 0);
     }
@@ -236,37 +205,6 @@ public class Cache {
 
     public static void set(String key, Object value, int expiration) {
         cacheEngine.set(key, Serializations.asBytes(value), expiration);
-    }
-
-    /**
-     * Decrement the element value (must be a Number).
-     *
-     * @param key              Element key
-     * @param by               The decr value
-     * @param initial          The initial value
-     * @param expirationInSecs The expiration
-     */
-    public static void decr(String key, int by, final long initial, final int expirationInSecs) {
-        cacheEngine.decr(key, by, initial, expirationInSecs);
-    }
-
-    /**
-     * Decrement the element value (must be a Number) by 1.
-     *
-     * @param key              Element key
-     * @param expirationInSecs The expiration
-     */
-    public static void decr(String key, final int expirationInSecs) {
-        decr(key, 1, 0, expirationInSecs);
-    }
-
-    /**
-     * Decrement the element value (must be a Number) by 1.
-     *
-     * @param key Element key
-     */
-    public static void decr(String key) {
-        decr(key, 0);
     }
 
     /**

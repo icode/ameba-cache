@@ -4,6 +4,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.nustaq.serialization.*;
 
 import java.io.IOException;
+import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -32,7 +33,7 @@ public class FSTSerializer implements Serializer {
                                       FSTClazzInfo.FSTFieldInfo referencee, int streamPositioin) throws Exception {
                 String path = fstObjectInput.readStringUTF();
                 if (StringUtils.isBlank(path)) return null;
-                return Paths.get(path);
+                return Paths.get(URI.create(path));
             }
         }, true);
         conf.setClassLoader(Thread.currentThread().getContextClassLoader());
